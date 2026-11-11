@@ -24,36 +24,39 @@ Centralizar citas, catálogo y reseñas en un solo sistema reduce errores de age
 | Administrador | Gestiona barberos, servicios y catálogo de cortes. |
 
 ## 6. Requerimientos funcionales
+
+| ID / Categoría | Descripción | Rol | Tipo |
+|---|---|---|---|
 | **Usuarios y acceso** | | | |
 | RF-01 | Registrarse como cliente (nombre, email, contraseña, teléfono). | Cliente | Base |
 | RF-02 | Iniciar y cerrar sesión. | Todo tipo de usuario | Base |
 | RF-03 | Consultar y editar su perfil. | Todo tipo de usuario | Base |
 | RF-04 | Dar de alta, edición y baja de barberos. | Administrador | Base |
-| **Servicios** |
-| RF-05 | Consultar el catálogo de servicios con duración y precio. | Todo tipo de usuario| Base |
+| **Servicios** | | | |
+| RF-05 | Consultar el catálogo de servicios con duración y precio. | Todo tipo de usuario | Base |
 | RF-06 | Alta, edición y baja de servicios. | Administrador | Base |
-| **Catálogo de cortes** |
+| **Catálogo de cortes** | | | |
 | RF-07 | Consultar cortes (imagen y descripción), con filtro por servicio o nombre. | Todo tipo de usuario | Base |
 | RF-08 | Dar de alta, edición y baja de cortes. | Administrador | Base |
-| **Horarios y disponibilidad** |
+| **Horarios y disponibilidad** | | | |
 | RF-09 | Definir el horario semanal de trabajo. | Barbero, Administrador | Base |
 | RF-10 | Consultar horarios libres por barbero, servicio y fecha. | Cliente | Base |
-| **Citas** |
+| **Citas** | | | |
 | RF-11 | Agendar cita (barbero, servicio, fecha y hora, corte opcional, notas). | Cliente | Base |
 | RF-12 | Consultar sus citas. | Cliente | Base |
 | RF-13 | Consultar la agenda por día. | Barbero, Administrador | Base |
 | RF-14 | Reprogramar una cita. | Cliente | Base |
 | RF-15 | Cancelar una cita. | Cliente, Administrador | Base |
 | RF-16 | Cambiar el estado de una cita (confirmar, completar). | Barbero, Administrador | Base |
-| **Cotizaciones** |
-| RF-17 | Generar una cotización eligiendo servicios y cantidades (el total se calcula solo) | Cliente | Base |
+| **Cotizaciones** | | | |
+| RF-17 | Generar una cotización eligiendo servicios y cantidades (el total se calcula solo). | Cliente | Base |
 | RF-18 | Consultar sus cotizaciones. | Cliente | Base |
 | RF-19 | Aceptar, rechazar o eliminar una cotización pendiente. | Cliente | Base |
-| **Reseñas** |
+| **Reseñas** | | | |
 | RF-20 | Reseñar una cita completada (calificación 1-5 y comentario). | Cliente | Base |
 | RF-21 | Consultar reseñas y calificación promedio por barbero. | Todo tipo de usuario | Base |
 | RF-22 | Editar o eliminar su propia reseña. | Cliente | Base |
-| **Probador virtual** |
+| **Probador virtual** | | | |
 | RF-23 | Activar la cámara, detectar el rostro y superponer el corte elegido del catálogo; permitir capturar la imagen. | Cliente | Extra |
 | RF-24 | Agendar cita desde el probador con el corte preseleccionado. | Cliente | Extra |
 
