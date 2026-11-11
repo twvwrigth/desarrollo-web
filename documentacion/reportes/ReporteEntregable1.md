@@ -24,7 +24,7 @@
 |------------|------------------------|-----------------|
 | Diagrama ER en PlantUML (`diagrama.png`) | José Emmanuel | `23084e5` |
 | Script `esquema.sql` | José Emmanuel | `805f40f` |
-| Requerimientos (`requerimientos.md`) | Erick Iray | `https://github.com/<usuario>/desarrollo-web/commit/<hash>` |
+| Requerimientos (`requerimientos.md`) | Erick Iray | `14b64b8` |
 | Endpoints REST y reparto (`endpoints.md`) | José Luis | `9b12c58` |
 
 ---
