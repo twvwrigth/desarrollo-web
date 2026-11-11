@@ -24,7 +24,7 @@ Centralizar citas, catálogo y reseñas en un solo sistema reduce errores de age
 | Administrador | Gestiona barberos, servicios y catálogo de cortes. |
 
 ## 6. Requerimientos funcionales
-| **Usuarios y acceso** |
+| **Usuarios y acceso** | | | |
 | RF-01 | Registrarse como cliente (nombre, email, contraseña, teléfono). | Cliente | Base |
 | RF-02 | Iniciar y cerrar sesión. | Todo tipo de usuario | Base |
 | RF-03 | Consultar y editar su perfil. | Todo tipo de usuario | Base |
