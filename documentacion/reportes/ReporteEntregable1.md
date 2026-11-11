@@ -1,6 +1,6 @@
 # Reporte de Avance del Proyecto
 
-**Equipo:** José Emmanuel, Erick Iray, José Luis
+**Equipo:** José Emmanuel Martínez Galicia (@tachi), Erick Iray Gutiérrez del Ángel, José Luis Lucas Landa
 **Fecha:** 11/11/2026
 **Número de reporte:** 1
 **Repositorio GitHub:** https://github.com/twvwrigth/desarrollo-web
@@ -25,7 +25,7 @@
 | Diagrama ER en PlantUML (`modelo-datos.md`) | José Emmanuel | `23084e5` |
 | Script `esquema.sql` | José Emmanuel | `805f40f` |
 | Requerimientos (`requerimientos.md`) | Erick Iray | `https://github.com/<usuario>/desarrollo-web/commit/<hash>` |
-| Endpoints REST y reparto (`endpoints.md`, `responsabilidades.md`) | José Luis | `https://github.com/<usuario>/desarrollo-web/commit/<hash>` |
+| Endpoints REST y reparto (`endpoints.md`) | José Luis | `9b12c58` |
 
 ---
 
