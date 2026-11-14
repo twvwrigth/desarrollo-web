@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbería — Servicios y cortes</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>💈 Barbería</h1>
+    <nav>
+      <a href="index.html" class="activo">Servicios</a>
+      <a href="agendar.html">Agendar cita</a>
+      <a href="resenas.html">Reseñas</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Servicios y cortes</h2>
+    <p class="nota" id="aviso-servicios"></p>
+
+    <!-- Lista de servicios. Se llena por JS: primero intenta GET /api/servicios;
+         si ese endpoint aún no existe, muestra los servicios de ejemplo. -->
+    <section id="lista-servicios" class="grid" aria-live="polite">
+      <p>Cargando servicios…</p>
+    </section>
+
+    <section class="card">
+      <h3>¿Ya te atendimos?</h3>
+      <p>Si tu cita ya está COMPLETADA, puedes dejar tu reseña.</p>
+      <a class="btn" href="resenas.html">Dejar una reseña</a>
+      <a class="btn btn-secundario" href="agendar.html">Agendar una cita</a>
+    </section>
+  </main>
+
+  <footer>
+    <p>Proyecto desarrollo-web — UV · Entrega: 23 de noviembre de 2026</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    cargarServicios();
+  </script>
+</body>
+</html>

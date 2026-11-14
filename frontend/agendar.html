@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbería — Agendar cita</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>💈 Barbería</h1>
+    <nav>
+      <a href="index.html">Servicios</a>
+      <a href="agendar.html" class="activo">Agendar cita</a>
+      <a href="resenas.html">Reseñas</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Agendar cita</h2>
+    <!-- Aviso honesto: POST /api/citas es de Erick y aún no está en el repo.
+         El formulario ya está listo; cuando exista el endpoint, funciona sin
+         cambiar el HTML. Mientras tanto, el JS avisa en vez de fingir éxito. -->
+    <p class="nota">⚠️ El endpoint <code>POST /api/citas</code> (módulo de Erick) aún no está en el repo. Este formulario ya está listo para usarlo cuando exista.</p>
+
+    <form id="form-cita" class="card form">
+      <label>
+        Tu ID de cliente
+        <input type="number" id="cliente-id" min="1" required placeholder="Ej. 4">
+      </label>
+      <label>
+        ID del barbero
+        <input type="number" id="barbero-id" min="1" required placeholder="Ej. 2">
+      </label>
+      <label>
+        Servicio
+        <select id="servicio-id" required>
+          <option value="1">Corte clásico — 30 min · $150</option>
+          <option value="2">Corte + barba — 45 min · $200</option>
+          <option value="3">Afeitado clásico — 20 min · $120</option>
+        </select>
+      </label>
+      <label>
+        Fecha y hora
+        <input type="datetime-local" id="fecha-hora" required>
+      </label>
+      <button type="submit" class="btn">Agendar</button>
+      <p id="mensaje-cita" class="mensaje" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <footer>
+    <p>Proyecto desarrollo-web — UV · Entrega: 23 de noviembre de 2026</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById('form-cita').addEventListener('submit', agendarCita);
+  </script>
+</body>
+</html>

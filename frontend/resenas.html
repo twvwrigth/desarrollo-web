@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbería — Reseñas</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>💈 Barbería</h1>
+    <nav>
+      <a href="index.html">Servicios</a>
+      <a href="agendar.html">Agendar cita</a>
+      <a href="resenas.html" class="activo">Reseñas</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Reseñas</h2>
+
+    <section class="card">
+      <h3>Ver reseñas de un barbero</h3>
+      <form id="form-buscar" class="form-inline">
+        <label>
+          ID del barbero
+          <input type="number" id="buscar-barbero-id" min="1" placeholder="Ej. 2">
+        </label>
+        <button type="submit" class="btn">Buscar</button>
+        <button type="button" class="btn btn-secundario" id="btn-todas">Ver todas</button>
+      </form>
+      <p id="mensaje-lista" class="mensaje" aria-live="polite"></p>
+      <ul id="lista-resenas" class="lista-resenas"></ul>
+    </section>
+
+    <section class="card">
+      <h3>Dejar una reseña</h3>
+      <p class="nota">Solo se puede reseñar una cita <strong>COMPLETADA</strong>, una reseña por cita y solo el cliente de esa cita. Si no se cumple, el backend responde 409 o 403 y aquí se muestra su mensaje.</p>
+      <form id="form-resena" class="form">
+        <label>
+          ID de la cita
+          <input type="number" id="cita-id" min="1" required placeholder="Ej. 15">
+        </label>
+        <label>
+          Tu ID de cliente (opcional, se envía como X-Usuario-Id)
+          <input type="number" id="usuario-id" min="1" placeholder="Ej. 4">
+        </label>
+        <label>
+          Calificación (1 a 5)
+          <select id="calificacion" required>
+            <option value="">Elige…</option>
+            <option value="5">★★★★★ — 5</option>
+            <option value="4">★★★★☆ — 4</option>
+            <option value="3">★★★☆☆ — 3</option>
+            <option value="2">★★☆☆☆ — 2</option>
+            <option value="1">★☆☆☆☆ — 1</option>
+          </select>
+        </label>
+        <label>
+          Comentario
+          <textarea id="comentario" rows="3" placeholder="Excelente corte y buen trato"></textarea>
+        </label>
+        <button type="submit" class="btn">Enviar reseña</button>
+        <p id="mensaje-resena" class="mensaje" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>Proyecto desarrollo-web — UV · Entrega: 23 de noviembre de 2026</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.getElementById('form-buscar').addEventListener('submit', buscarResenas);
+    document.getElementById('btn-todas').addEventListener('click', listarTodasResenas);
+    document.getElementById('form-resena').addEventListener('submit', enviarResena);
+    listarTodasResenas();
+  </script>
+</body>
+</html>

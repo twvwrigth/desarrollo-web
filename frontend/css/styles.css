@@ -1,0 +1,125 @@
+/* Esqueleto frontend E2 — José Emmanuel.
+   CSS básico, responsivo, sin dependencias externas.
+   Paleta sencilla de barbería: oscuro + dorado. */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #f4f1ea;
+  color: #1c1c1c;
+  line-height: 1.5;
+}
+
+.topbar {
+  background: #1c1c1c;
+  color: #f4f1ea;
+  padding: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar h1 { margin: 0; font-size: 1.4rem; }
+
+.topbar nav { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.topbar nav a {
+  color: #f4f1ea;
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+}
+
+.topbar nav a.activo,
+.topbar nav a:hover { background: #c9a227; color: #1c1c1c; }
+
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+h2 { margin-top: 0.5rem; }
+
+.card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.servicio { background: #fff; border: 1px solid #ddd; border-radius: 10px; padding: 1rem; }
+.servicio h3 { margin: 0 0 0.3rem; }
+.servicio .precio { font-weight: bold; color: #8a6d00; }
+
+.form label { display: block; margin-bottom: 0.8rem; font-weight: 600; }
+
+.form input,
+.form select,
+.form textarea {
+  display: block;
+  width: 100%;
+  margin-top: 0.3rem;
+  padding: 0.6rem;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.form-inline { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: flex-end; }
+.form-inline label { font-weight: 600; }
+.form-inline input { padding: 0.6rem; border: 1px solid #bbb; border-radius: 6px; font: inherit; }
+
+.btn {
+  display: inline-block;
+  background: #c9a227;
+  color: #1c1c1c;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:hover { filter: brightness(0.92); }
+
+.btn-secundario { background: #e0dccf; }
+
+.nota {
+  background: #fff8d6;
+  border: 1px solid #e5c200;
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+}
+
+.mensaje { font-weight: 600; min-height: 1.2em; }
+.mensaje.error { color: #a10000; }
+.mensaje.exito { color: #0a6b2d; }
+
+.lista-resenas { list-style: none; padding: 0; }
+.lista-resenas li {
+  border-top: 1px solid #eee;
+  padding: 0.7rem 0;
+}
+.lista-resenas .estrellas { color: #c9a227; letter-spacing: 0.1rem; }
+.lista-resenas small { color: #666; }
+
+footer { text-align: center; color: #666; padding: 1rem; font-size: 0.9rem; }
+
+@media (max-width: 600px) {
+  .topbar { flex-direction: column; align-items: flex-start; }
+  main { padding: 0.7rem; }
+}
