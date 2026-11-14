@@ -14,7 +14,14 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 
-//El cliente manda su id y el detalle con los servicios y cantidades
+// Controlador E2 de Erick, al estilo de los controladores en clase.
+// La cotización llega con el cliente y su detalle, por ejemplo:
+// {"cliente": {"id": 1}, "detalle": [
+//   {"servicio": {"id": 1}, "cantidad": 1},
+//   {"servicio": {"id": 2}, "cantidad": 2, "precioUnitario": 80.00}]}
+// Si un renglón no trae precioUnitario se usa el precio del servicio.
+// El total lo calcula el servidor; lo que mande el cliente en "total"
+// se ignora y se sobrescribe.
 @CrossOrigin(origins = "*")
 @RestController
 public class CotizacionControlador {
@@ -71,8 +78,12 @@ public class CotizacionControlador {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Datos invalidos", "mensaje", "precioUnitario no puede ser negativo"));
             }
+            // Se fija el servicio gestionado en el renglón. La llave foránea
+            // cotizacion_id la pone Hibernate sola al guardar la cotización,
+            // porque el @OneToMany de Cotizacion lleva
+            // @JoinColumn(name = "cotizacion_id"): el renglón no tiene campo
+            // "cotizacion", así que tampoco hay ciclo al convertir a JSON.
             renglon.setServicio(servicio.get());
-            renglon.setCotizacion(cotizacion);
             total = total.add(renglon.getPrecioUnitario()
                     .multiply(BigDecimal.valueOf(renglon.getCantidad())));
         }
