@@ -1,11 +1,9 @@
-# Reporte de Avance del Proyecto — BORRADOR (no subir todavía)
+# Reporte de Avance del Proyecto
 
 **Equipo:** José Emmanuel Martínez Galicia (@tachi), Erick Iray Gutiérrez del Ángel, José Luis Lucas Landa
-**Fecha:** [pendiente — poner el día en que se suba]
+**Fecha:** 16/11/2026
 **Número de reporte:** 3
 **Repositorio GitHub:** https://github.com/twvwrigth/desarrollo-web
-
-> Borrador preparado el 15/11/2026 a partir del Reporte 2 
 
 ---
 
@@ -21,7 +19,14 @@ trabaja en el backend completo E3:
   `GET /api/resenas/resumen?barberoId=` con promedio y total,
   `PUT /api/resenas/{id}` para editar la propia reseña y
   `DELETE /api/resenas/{id}` 
-- [PENDIENTE] José Luis: PUT/DELETE de usuarios y horarios, filtro de usuarios por rol.
+- [HECHO, probado 16/11/2026 contra MySQL real en WSL, con persistencia tras
+  reinicio] José Luis: `UsuarioControlador.java`, `HorarioControlador.java`,
+  `IUsuario.java` y `HorarioBarbero.java` completos: `GET /api/usuarios?rol=`
+  (solo activos, rol inválido → 400), `PUT /api/usuarios/{id}` (edita perfil,
+  re-encripta BCrypt, email de otro → 409, no cambia rol ni activo),
+  `DELETE /api/usuarios/{id}` (baja lógica `activo=false`), `PUT /api/horarios/{id}`
+  (parcial, traslape → 409, `diaSemana` pasa a `Integer` para el PUT parcial) y
+  `DELETE /api/horarios/{id}`.
 - [HECHO, verificado 16/11/2026, 10/10 pruebas OK con `mvn test`; falta probar con cURL
   contra MySQL y subir] Erick: `ServicioControlador.java`, `CorteControlador.java`,
   `CitaControlador.java` y `CotizacionControlador.java` completos: PUT/DELETE de servicios
@@ -38,7 +43,7 @@ trabaja en el backend completo E3:
 | Actividad | Integrante responsable | Enlace a commit |
 | --- | --- | --- |
 | E3 reseñas: PUT/DELETE + resumen + frontend E3 | José Emmanuel Martínez Galicia | https://github.com/twvwrigth/desarrollo-web/commit/34232722690a239742594f119450c0feebe849d5 |
-| [PENDIENTE] PUT/DELETE usuarios y horarios | José Luis Lucas Landa | https://github.com/twvwrigth/desarrollo-web/commit/85af7560b582a9735dfc48d46fa2f5ea976459f6 |
+| E3 usuarios y horarios: PUT/DELETE, filtro por rol y baja lógica + pruebas cURL contra MySQL real y persistencia tras reinicio | José Luis Lucas Landa | https://github.com/twvwrigth/desarrollo-web/commit/85af7560b582a9735dfc48d46fa2f5ea976459f6 |
 | E3 servicios, cortes, citas y cotizaciones: PUT/DELETE, filtros, disponibilidad y cambios de estado + pruebas cURL | Erick Iray Gutiérrez del Ángel | https://github.com/twvwrigth/desarrollo-web/commit/77bddb9caf8cf79ab3c75b5f9ee24a41a6fb3c3c |
 
 ---
@@ -83,6 +88,15 @@ Indicar qué funcionalidades ya se encuentran operativas y cuáles están pendie
   - Nota: el log del script no se guardó en archivo por un `Permission denied`
     al escribir en la carpeta System32 de Windows; los resultados se tomaron
     de la salida de la terminal, que mostró OK en los 11 casos.
+- E3 de José Luis, probado el 16/11/2026 contra MySQL real en WSL (puerto 8081):
+  persistencia comprobada con POST de usuario, parada y reinicio del backend y
+  GET con 200 y los mismos datos. Prueba de integración `JoseLuisE3IntegrationTest`
+  1/1 OK y smoke cURL todo verde (`fail=0`): filtro `?rol=BARBERO` incluye barbero
+  y excluye cliente, rol inválido → 400, PUT usuario → 200, email duplicado → 409,
+  PUT usuario 404, PUT horario parcial → 200, traslape al editar → 409, PUT horario
+  404, DELETE horario → 204 y repetido → 404, DELETE usuario → 204, GET tras baja
+  → 404. Nota: el test y los docs cURL no se subieron en `85af756`, quedaron solo
+  en copia local.
 - E3 de Erick, verificado el 16/11/2026 con `mvn test` (10/10 pruebas OK, H2, sin tocar
   MySQL): PUT/DELETE de servicio y corte con baja lógica, filtros de citas,
   disponibilidad con huecos libres, reprogramar cita, transiciones de estado
@@ -133,8 +147,10 @@ Describir brevemente la contribución de cada integrante.
   filtros y disponibilidad de citas, reprogramar y cambio de estado de citas,
   filtro y cambio de estado de cotizaciones, pruebas cURL E3 y 8 pruebas MockMvc
   (10/10 con `mvn test`). Commit [PENDIENTE].
-- **Integrante 3:** José Luis Lucas Landa — [PENDIENTE: PUT/DELETE de usuarios y
-  horarios, filtro por rol].
+- **Integrante 3:** José Luis Lucas Landa — PUT/DELETE de usuarios y horarios,
+  filtro por rol, baja lógica y pruebas contra MySQL real en WSL con persistencia
+  tras reinicio.
+  Commit: https://github.com/twvwrigth/desarrollo-web/commit/85af7560b582a9735dfc48d46fa2f5ea976459f6
 
 ---
 
