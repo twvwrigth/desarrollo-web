@@ -22,8 +22,14 @@ trabaja en el backend completo E3:
   `PUT /api/resenas/{id}` para editar la propia reseña y
   `DELETE /api/resenas/{id}` 
 - [PENDIENTE] José Luis: PUT/DELETE de usuarios y horarios, filtro de usuarios por rol.
-- [PENDIENTE] Erick: PUT/DELETE de servicios, cortes, citas y cotizaciones, filtros de
-  citas, cambio de estado de cita y de cotización.
+- [HECHO, verificado 16/11/2026, 10/10 pruebas OK con `mvn test`; falta probar con cURL
+  contra MySQL y subir] Erick: `ServicioControlador.java`, `CorteControlador.java`,
+  `CitaControlador.java` y `CotizacionControlador.java` completos: PUT/DELETE de servicios
+  y cortes (solo admin, baja lógica), GET /api/citas con filtros (clienteId, barberoId,
+  fecha, estado), GET /api/citas/disponibilidad (huecos libres del barbero),
+  PUT /api/citas/{id} para reprogramar, PUT /api/citas/{id}/estado con transiciones,
+  DELETE /api/citas/{id} (cancela), GET /api/cotizaciones?clienteId=,
+  PUT /api/cotizaciones/{id}/estado y DELETE /api/cotizaciones/{id} (solo PENDIENTE).
 
 ---
 
@@ -33,7 +39,7 @@ trabaja en el backend completo E3:
 | --- | --- | --- |
 | E3 reseñas: PUT/DELETE + resumen + frontend E3 | José Emmanuel Martínez Galicia | https://github.com/twvwrigth/desarrollo-web/commit/34232722690a239742594f119450c0feebe849d5 |
 | [PENDIENTE] PUT/DELETE usuarios y horarios | José Luis Lucas Landa | https://github.com/twvwrigth/desarrollo-web/commit/85af7560b582a9735dfc48d46fa2f5ea976459f6 |
-| [PENDIENTE] PUT/DELETE servicios, cortes, citas y cotizaciones | Erick Iray Gutiérrez del Ángel | [PENDIENTE] |
+| E3 servicios, cortes, citas y cotizaciones: PUT/DELETE, filtros, disponibilidad y cambios de estado + pruebas cURL | Erick Iray Gutiérrez del Ángel | https://github.com/twvwrigth/desarrollo-web/commit/77bddb9caf8cf79ab3c75b5f9ee24a41a6fb3c3c |
 
 ---
 
@@ -48,6 +54,10 @@ Describir los problemas técnicos encontrados y cómo fueron solucionados.
   Solución: correrlo desde la carpeta del repo (`cd` al proyecto antes de
   `bash pruebas-E3.sh`). Las pruebas sí corrieron todas y se leyeron de la
   terminal.
+- Error en los curls de E3: el script ponía `BASE=http://localhost:8081/api` y las rutas
+  ya traen el `/api`, así que todas las URLs salían con `/api/api/` y daban 404.
+  Solución: `BASE=http://localhost:8081` en el script y en la guía (el mismo error
+  estaba en el script de E2 y también se corrigió).
 
 ---
 
@@ -73,6 +83,12 @@ Indicar qué funcionalidades ya se encuentran operativas y cuáles están pendie
   - Nota: el log del script no se guardó en archivo por un `Permission denied`
     al escribir en la carpeta System32 de Windows; los resultados se tomaron
     de la salida de la terminal, que mostró OK en los 11 casos.
+- E3 de Erick, verificado el 16/11/2026 con `mvn test` (10/10 pruebas OK, H2, sin tocar
+  MySQL): PUT/DELETE de servicio y corte con baja lógica, filtros de citas,
+  disponibilidad con huecos libres, reprogramar cita, transiciones de estado
+  (PENDIENTE → CONFIRMADA/CANCELADA, CONFIRMADA → COMPLETADA/CANCELADA) y DELETE de
+  cita que cancela; filtro y cambio de estado de cotizaciones y DELETE solo si está
+  PENDIENTE. Falta la prueba con cURL contra MySQL y subir el commit.
 
 **Pendientes:**
 
@@ -104,7 +120,7 @@ Documentar el uso de herramientas de inteligencia artificial durante el desarrol
 
 > Si no se utilizó IA, indicarlo expresamente.
 
----
+---s
 
 # 6. Participación individual
 
@@ -113,8 +129,10 @@ Describir brevemente la contribución de cada integrante.
 - **Integrante 1:** José Emmanuel Martínez Galicia (@tachi) — PUT/DELETE de reseñas,
   GET resumen, pruebas cURL E3 y frontend E3 (resumen, editar/eliminar reseña,
   mis citas con filtro, reprogramar/cancelar). Commit [PENDIENTE].
-- **Integrante 2:** Erick Iray Gutiérrez del Ángel — [PENDIENTE: PUT/DELETE y filtros
-  de servicios, cortes, citas y cotizaciones].
+- **Integrante 2:** Erick Iray Gutiérrez del Ángel — PUT/DELETE de servicios y cortes,
+  filtros y disponibilidad de citas, reprogramar y cambio de estado de citas,
+  filtro y cambio de estado de cotizaciones, pruebas cURL E3 y 8 pruebas MockMvc
+  (10/10 con `mvn test`). Commit [PENDIENTE].
 - **Integrante 3:** José Luis Lucas Landa — [PENDIENTE: PUT/DELETE de usuarios y
   horarios, filtro por rol].
 
