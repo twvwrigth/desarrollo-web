@@ -32,7 +32,7 @@ trabaja en el backend completo E3:
 | Actividad | Integrante responsable | Enlace a commit |
 | --- | --- | --- |
 | E3 reseñas: PUT/DELETE + resumen + frontend E3 | José Emmanuel Martínez Galicia | https://github.com/twvwrigth/desarrollo-web/commit/34232722690a239742594f119450c0feebe849d5 |
-| [PENDIENTE] PUT/DELETE usuarios y horarios | José Luis Lucas Landa | [PENDIENTE] |
+| [PENDIENTE] PUT/DELETE usuarios y horarios | José Luis Lucas Landa | https://github.com/twvwrigth/desarrollo-web/commit/85af7560b582a9735dfc48d46fa2f5ea976459f6 |
 | [PENDIENTE] PUT/DELETE servicios, cortes, citas y cotizaciones | Erick Iray Gutiérrez del Ángel | [PENDIENTE] |
 
 ---
