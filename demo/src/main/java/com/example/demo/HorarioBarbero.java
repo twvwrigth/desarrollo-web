@@ -22,8 +22,10 @@ public class HorarioBarbero {
     @JoinColumn(name = "barbero_id")
     private Usuario barbero;
 
+    // Integer (no int) para poder distinguir "no viene en el PUT" de un valor,
+    // y permitir ediciones parciales en E3. La validacion 1-7 sigue en el controlador.
     @Column(name = "dia_semana")
-    private int diaSemana;
+    private Integer diaSemana;
 
     @Column(name = "hora_inicio")
     private LocalTime horaInicio;
@@ -34,7 +36,7 @@ public class HorarioBarbero {
     public HorarioBarbero() {
     }
 
-    public HorarioBarbero(int diaSemana, LocalTime horaInicio, LocalTime horaFin) {
+    public HorarioBarbero(Integer diaSemana, LocalTime horaInicio, LocalTime horaFin) {
         this.diaSemana = diaSemana;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
@@ -52,11 +54,11 @@ public class HorarioBarbero {
         this.barbero = barbero;
     }
 
-    public int getDiaSemana() {
+    public Integer getDiaSemana() {
         return diaSemana;
     }
 
-    public void setDiaSemana(int diaSemana) {
+    public void setDiaSemana(Integer diaSemana) {
         this.diaSemana = diaSemana;
     }
 
