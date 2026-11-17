@@ -1,27 +1,22 @@
 package com.example.demo;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 
-// Controlador E2 de Erick, al estilo de los controladores en clase.
-// La cotización llega con el cliente y su detalle, por ejemplo:
-// {"cliente": {"id": 1}, "detalle": [
-//   {"servicio": {"id": 1}, "cantidad": 1},
-//   {"servicio": {"id": 2}, "cantidad": 2, "precioUnitario": 80.00}]}
-// Si un renglón no trae precioUnitario se usa el precio del servicio.
-// El total lo calcula el servidor; lo que mande el cliente en "total"
-// se ignora y se sobrescribe.
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 @CrossOrigin(origins = "*")
 @RestController
 public class CotizacionControlador {
@@ -35,7 +30,6 @@ public class CotizacionControlador {
     @Autowired
     IServicio iservicio;
 
-    // E2: POST /api/cotizaciones -> 201 / 400 / 404
     @PostMapping("/api/cotizaciones")
     public ResponseEntity<?> crear(@RequestBody Cotizacion cotizacion) {
         if (cotizacion.getCliente() == null || cotizacion.getCliente().getId() == null) {
@@ -78,11 +72,7 @@ public class CotizacionControlador {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Datos invalidos", "mensaje", "precioUnitario no puede ser negativo"));
             }
-            // Se fija el servicio gestionado en el renglón. La llave foránea
-            // cotizacion_id la pone Hibernate sola al guardar la cotización,
-            // porque el @OneToMany de Cotizacion lleva
-            // @JoinColumn(name = "cotizacion_id"): el renglón no tiene campo
-            // "cotizacion", así que tampoco hay ciclo al convertir a JSON.
+            
             renglon.setServicio(servicio.get());
             total = total.add(renglon.getPrecioUnitario()
                     .multiply(BigDecimal.valueOf(renglon.getCantidad())));
@@ -95,7 +85,6 @@ public class CotizacionControlador {
         return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
     }
 
-    // E2: GET /api/cotizaciones/{id} -> 200 / 404
     @GetMapping("/api/cotizaciones/{id}")
     public ResponseEntity<?> obtener(@PathVariable Integer id) {
         Optional<Cotizacion> cotizacion = icotizacion.findById(id);
@@ -106,7 +95,6 @@ public class CotizacionControlador {
         return ResponseEntity.ok(cotizacion.get());
     }
 
-    // E2: GET /api/clientes/{id}/cotizaciones -> 200 / 404
     @GetMapping("/api/clientes/{id}/cotizaciones")
     public ResponseEntity<?> listarPorCliente(@PathVariable Integer id) {
         Optional<Usuario> cliente = iusuario.findById(id);
@@ -115,5 +103,63 @@ public class CotizacionControlador {
                     .body(Map.of("error", "No encontrado", "mensaje", "Cliente no encontrado"));
         }
         return ResponseEntity.ok(icotizacion.findByClienteId(id));
+    }
+
+    // Sin clienteId devuelve todas las cotizaciones; con clienteId solo las de ese cliente.
+    @GetMapping("/api/cotizaciones")
+    public ResponseEntity<?> listar(@RequestParam(required = false) Integer clienteId) {
+        if (clienteId != null) {
+            return ResponseEntity.ok(icotizacion.findByClienteId(clienteId));
+        }
+        return ResponseEntity.ok(icotizacion.findAll());
+    }
+    @PutMapping("/api/cotizaciones/{id}/estado")
+    public ResponseEntity<?> cambiarEstado(@PathVariable Integer id,
+                                          @RequestBody(required = false) Map<String, String> cuerpo) {
+        Optional<Cotizacion> actual = icotizacion.findById(id);
+        if (actual.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "No encontrado", "mensaje", "Cotizacion no encontrada"));
+        }
+        Cotizacion cotizacion = actual.get();
+        String nuevoTexto = cuerpo == null ? null : cuerpo.get("estado");
+        if (nuevoTexto == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Datos invalidos", "mensaje", "estado es obligatorio: ACEPTADA o RECHAZADA"));
+        }
+        EstadoCotizacion nuevo;
+        try {
+            nuevo = EstadoCotizacion.valueOf(nuevoTexto.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Datos invalidos", "mensaje", "estado no válido: ACEPTADA o RECHAZADA"));
+        }
+        if (cotizacion.getEstado() != EstadoCotizacion.PENDIENTE) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Conflicto",
+                            "mensaje", "Solo una cotización PENDIENTE puede cambiar de estado"));
+        }
+        if (nuevo == EstadoCotizacion.PENDIENTE) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Conflicto",
+                            "mensaje", "No se puede volver una cotización a PENDIENTE"));
+        }
+        cotizacion.setEstado(nuevo);
+        return ResponseEntity.ok(icotizacion.save(cotizacion));
+    }
+    @DeleteMapping("/api/cotizaciones/{id}")
+    public ResponseEntity<?> eliminar(@PathVariable Integer id) {
+        Optional<Cotizacion> actual = icotizacion.findById(id);
+        if (actual.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "No encontrado", "mensaje", "Cotizacion no encontrada"));
+        }
+        if (actual.get().getEstado() != EstadoCotizacion.PENDIENTE) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Conflicto",
+                            "mensaje", "Solo se puede eliminar una cotización PENDIENTE"));
+        }
+        icotizacion.delete(actual.get());
+        return ResponseEntity.noContent().build();
     }
 }
