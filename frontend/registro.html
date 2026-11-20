@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbería — Registro</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Barbería</h1>
+    <nav>
+      <a href="index.html">Servicios</a>
+      <a href="agendar.html">Agendar cita</a>
+      <a href="resenas.html">Reseñas</a>
+      <a href="login.html">Iniciar sesión</a>
+      <a href="registro.html" class="activo">Registro</a>
+      <a href="usuarios.html">Usuarios</a>
+      <a href="horarios.html">Horarios</a>
+    </nav>
+    <span id="sesion-info" class="sesion"></span>
+  </header>
+
+  <main>
+    <h2>Registro de usuarios</h2>
+
+    <form id="form-registro" class="card form">
+      <label>
+        Nombre
+        <input type="text" id="registro-nombre" required placeholder="Ej. Ana López">
+      </label>
+      <label>
+        Email
+        <input type="email" id="registro-email" required placeholder="Ej. ana@correo.com">
+      </label>
+      <label>
+        Contraseña
+        <input type="password" id="registro-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+      </label>
+      <label>
+        Teléfono
+        <input type="tel" id="registro-telefono" placeholder="Ej. 2281234567">
+      </label>
+      <label>
+        Rol
+        <select id="registro-rol" required>
+          <option value="CLIENTE">Cliente</option>
+          <option value="BARBERO">Barbero</option>
+          <option value="ADMIN">Administrador</option>
+        </select>
+      </label>
+      <button type="submit" class="btn">Crear cuenta</button>
+      <p id="mensaje-registro" class="mensaje" aria-live="polite"></p>
+    </form>
+
+    <section class="card">
+      <h3>¿Quién puede crear cada rol?</h3>
+      <p class="nota">Sin sesión, solo se puede crear <strong>CLIENTE</strong>. Para crear un <strong>BARBERO</strong> o un <strong>ADMIN</strong> hay que entrar primero como administrador: si no lo eres, el backend responde 403 y aquí se muestra su mensaje. Si el email ya está registrado, responde 409.</p>
+      <p>¿Ya tienes cuenta? <a href="login.html">Inicia sesión aquí</a>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Proyecto desarrollo-web — UV · Entrega: 23 de noviembre de 2026</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/usuarios.js"></script>
+  <script>
+    pintarSesion();
+    document.getElementById('form-registro').addEventListener('submit', registrarUsuario);
+  </script>
+</body>
+</html>
