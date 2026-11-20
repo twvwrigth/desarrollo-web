@@ -8,19 +8,47 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>Barbería</h1>
+    <h1>💈 Barbería</h1>
     <nav>
       <a href="index.html" class="activo">Servicios</a>
       <a href="agendar.html">Agendar cita</a>
       <a href="resenas.html">Reseñas</a>
     </nav>
+    <span id="sesion-info" class="sesion"></span>
   </header>
 
   <main>
     <h2>Servicios y cortes</h2>
     <p class="nota" id="aviso-servicios"></p>
-    <section id="lista-servicios" class="grid" aria-live="polite">
-      <p>Cargando servicios…</p>
+
+    <!-- E4: tabla de servicios (GET /api/servicios). Cada fila tiene su botón
+         "Ver cortes", que llena la tabla de cortes de abajo. -->
+    <section class="card">
+      <h3>Servicios</h3>
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead>
+            <tr><th>Servicio</th><th>Descripción</th><th>Duración</th><th>Precio</th><th></th></tr>
+          </thead>
+          <tbody id="cuerpo-servicios" aria-live="polite">
+            <tr><td colspan="5">Cargando servicios…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- E4: tabla de cortes del servicio elegido (GET /api/servicios/{id}/cortes). -->
+    <section class="card" id="seccion-cortes" style="display: none;">
+      <h3 id="titulo-cortes">Cortes</h3>
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead>
+            <tr><th>Corte</th><th>Descripción</th></tr>
+          </thead>
+          <tbody id="cuerpo-cortes"></tbody>
+        </table>
+      </div>
+      <p id="mensaje-cortes" class="mensaje" aria-live="polite"></p>
     </section>
 
     <section class="card">
@@ -37,6 +65,7 @@
 
   <script src="js/app.js"></script>
   <script>
+    mostrarSesion();
     cargarServicios();
   </script>
 </body>

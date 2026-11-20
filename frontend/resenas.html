@@ -14,6 +14,7 @@
       <a href="agendar.html">Agendar cita</a>
       <a href="resenas.html" class="activo">Reseñas</a>
     </nav>
+    <span id="sesion-info" class="sesion"></span>
   </header>
 
   <main>
@@ -24,17 +25,29 @@
       <form id="form-buscar" class="form-inline">
         <label>
           ID del barbero
-          <input type="number" id="buscar-barbero-id" min="1" placeholder="Ej. 2">
+          <input type="number" id="buscar-barbero-id" min="1" placeholder="Ej. 3">
         </label>
         <button type="submit" class="btn">Buscar</button>
         <button type="button" class="btn btn-secundario" id="btn-todas">Ver todas</button>
       </form>
+      <!-- Resumen del barbero (GET /api/resenas/resumen?barberoId=, E3). -->
       <p id="resumen-barbero" class="resumen" aria-live="polite"></p>
       <p id="mensaje-lista" class="mensaje" aria-live="polite"></p>
-      <ul id="lista-resenas" class="lista-resenas"></ul>
-      <p class="nota">Cada reseña tiene sus botones <strong>Editar</strong> y <strong>Eliminar</strong> (E3). Solo el cliente de la cita puede usarlos: pon tu ID en el campo "Tu ID de cliente" de abajo, que se manda como X-Usuario-Id. Si no eres el cliente, el backend responde 403.</p>
+      <!-- E4: las reseñas se muestran en TABLA, no en lista. -->
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead>
+            <tr><th>Cita</th><th>Calificación</th><th>Comentario</th><th>Fecha</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="cuerpo-resenas" aria-live="polite">
+            <tr><td colspan="5">Cargando reseñas…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="nota">Cada reseña tiene sus botones <strong>Editar</strong> y <strong>Eliminar</strong>. Solo el cliente de la cita puede usarlos: si hay sesión guardada se manda su ID, si no, pon tu ID en el campo "Tu ID de cliente" de abajo (se manda como X-Usuario-Id). Si no eres el cliente, el backend responde 403 y aquí se muestra su mensaje.</p>
     </section>
 
+    <!-- Formulario de edición, oculto hasta pulsar "Editar" en una reseña. -->
     <section class="card" id="form-editar-resena" style="display: none;">
       <h3>Editar reseña</h3>
       <form id="form-editar" class="form">
@@ -65,11 +78,11 @@
       <form id="form-resena" class="form">
         <label>
           ID de la cita
-          <input type="number" id="cita-id" min="1" required placeholder="Ej. 15">
+          <input type="number" id="cita-id" min="1" required placeholder="Ej. 1">
         </label>
         <label>
-          Tu ID de cliente (opcional, se envía como X-Usuario-Id)
-          <input type="number" id="usuario-id" min="1" placeholder="Ej. 4">
+          Tu ID de cliente (si no hay sesión guardada, se envía como X-Usuario-Id)
+          <input type="number" id="usuario-id" min="1" placeholder="Ej. 2">
         </label>
         <label>
           Calificación (1 a 5)
@@ -98,6 +111,7 @@
 
   <script src="js/app.js"></script>
   <script>
+    mostrarSesion();
     document.getElementById('form-buscar').addEventListener('submit', buscarResenas);
     document.getElementById('btn-todas').addEventListener('click', listarTodasResenas);
     document.getElementById('form-resena').addEventListener('submit', enviarResena);

@@ -1,10 +1,49 @@
-// Esqueleto frontend E2 — José Emmanuel.
-// Consume la API en http://localhost:8081/api (backend en WSL, ./mvnw spring-boot:run).
-// Reseñas: endpoints reales de ResenaControlador (POST y GET /api/resenas).
-// Servicios y citas: endpoints aún no existen en el repo; el código lo dice
-// claro y usa datos de ejemplo en vez de fingir que el backend respondió.
+// Frontend E4 (sistema integrado) — José Emmanuel.
+// Consume la API en http://localhost:8081/api (backend en WSL, ./mvnw spring-boot:run desde demo/).
+//.
 
 const API_BASE = 'http://localhost:8081/api';
+
+
+async function apiFetch(ruta, opciones) {
+  const opts = opciones || {};
+  const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+  const usuarioId = sesionUsuarioId();
+  if (usuarioId && !headers['X-Usuario-Id']) headers['X-Usuario-Id'] = usuarioId;
+  let resp;
+  try {
+    resp = await fetch(API_BASE + ruta, Object.assign({}, opts, { headers: headers }));
+  } catch (e) {
+    throw new Error('No se pudo conectar con el backend en localhost:8081.');
+  }
+  const datos = await resp.json().catch(function () { return {}; });
+  return { ok: resp.ok, status: resp.status, datos: datos };
+}
+
+// Sesión: José Luis guarda el usuario en sessionStorage al hacer login
+// (E2). Si hay un usuarioId guardado, se usa para X-Usuario-Id; si no,
+// se usa el campo manual "Tu ID de cliente" de resenas.html.
+function sesionUsuarioId() {
+  try {
+    const v = sessionStorage.getItem('usuarioId');
+    return v ? Number(v) : null;
+  } catch (e) { return null; }
+}
+
+function leerUsuarioId() {
+  const sesion = sesionUsuarioId();
+  if (sesion) return sesion;
+  const el = document.getElementById('usuario-id');
+  return el && el.value ? Number(el.value) : null;
+}
+
+// Muestra en la barra superior quién está en sesión, si hay sesión.
+function mostrarSesion() {
+  const el = document.getElementById('sesion-info');
+  if (!el) return;
+  const id = sesionUsuarioId();
+  el.textContent = id ? ('Sesión: usuario #' + id) : '';
+}
 
 // Muestra el "mensaje" que manda el backend: {"error": "...", "mensaje": "..."}.
 function mostrarMensaje(id, texto, esError) {
@@ -14,14 +53,16 @@ function mostrarMensaje(id, texto, esError) {
   el.className = 'mensaje ' + (esError ? 'error' : 'exito');
 }
 
+function mensajeBackend(datos, porDefecto) {
+  return datos.mensaje || datos.error || porDefecto;
+}
+
 function estrellas(n) {
   const v = Math.max(0, Math.min(5, Number(n) || 0));
   return '★'.repeat(v) + '☆'.repeat(5 - v);
 }
 
-// ---- Servicios (index.html) ----
-// GET /api/servicios aún no existe. Si algún día existe, se usa; si no,
-// se muestran los servicios de ejemplo del cURL de reseñas.
+// ---- Servicios y cortes (index.html) — solo lectura, E4: en TABLA ----
 const SERVICIOS_EJEMPLO = [
   { nombre: 'Corte clásico', descripcion: 'Corte con tijera y máquina', duracionMin: 30, precio: 150.00 },
   { nombre: 'Corte + barba', descripcion: 'Corte clásico y arreglo de barba', duracionMin: 45, precio: 200.00 },
@@ -29,44 +70,81 @@ const SERVICIOS_EJEMPLO = [
 ];
 
 async function cargarServicios() {
-  const lista = document.getElementById('lista-servicios');
+  const cuerpo = document.getElementById('cuerpo-servicios');
   const aviso = document.getElementById('aviso-servicios');
-  if (!lista) return;
+  if (!cuerpo) return;
   try {
-    const resp = await fetch(API_BASE + '/servicios');
-    if (!resp.ok) throw new Error('sin endpoint');
-    const servicios = await resp.json();
-    pintarServicios(servicios);
+    const r = await apiFetch('/servicios');
+    if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
+    pintarServicios(r.datos);
     if (aviso) aviso.textContent = '';
   } catch (e) {
     pintarServicios(SERVICIOS_EJEMPLO);
-    if (aviso) aviso.textContent = 'Mostrando servicios de ejemplo: GET /api/servicios aún no existe en el backend.';
+    if (aviso) aviso.textContent = 'Mostrando servicios de ejemplo: ' + e.message + ' (GET /api/servicios).';
   }
 }
 
 function pintarServicios(servicios) {
-  const lista = document.getElementById('lista-servicios');
-  lista.innerHTML = servicios.map(function (s) {
-    const nombre = s.nombre || 'Servicio';
-    const desc = s.descripcion || '';
+  const cuerpo = document.getElementById('cuerpo-servicios');
+  if (!servicios.length) {
+    cuerpo.innerHTML = '<tr><td colspan="5">No hay servicios todavía.</td></tr>';
+    return;
+  }
+  cuerpo.innerHTML = servicios.map(function (s) {
     const dur = s.duracionMin || s.duracion_min || '';
     const precio = s.precio != null ? '$' + Number(s.precio).toFixed(2) : '';
-    return '<article class="servicio"><h3>' + nombre + '</h3><p>' + desc + '</p>' +
-      '<p>' + (dur ? dur + ' min · ' : '') + '<span class="precio">' + precio + '</span></p></article>';
+    return '<tr><td>' + (s.nombre || 'Servicio') + '</td><td>' + (s.descripcion || '') + '</td>' +
+      '<td>' + (dur ? dur + ' min' : '') + '</td><td>' + precio + '</td>' +
+      '<td><button type="button" class="btn btn-pequeno" onclick="cargarCortes(' + s.id + ', \'' + (s.nombre || '').replace(/'/g, '') + '\')">Ver cortes</button></td></tr>';
   }).join('');
 }
 
-// ---- Agendar cita (agendar.html) ----
-// POST /api/citas es de Erick y aún no existe. El formulario ya manda el
-// cuerpo esperado; si el endpoint responde 404, se avisa en vez de fingir éxito.
+// Cortes de un servicio — GET /api/servicios/{id}/cortes (Erick, E2).
+async function cargarCortes(servicioId, nombreServicio) {
+  const seccion = document.getElementById('seccion-cortes');
+  const titulo = document.getElementById('titulo-cortes');
+  const cuerpo = document.getElementById('cuerpo-cortes');
+  const mensaje = document.getElementById('mensaje-cortes');
+  if (!cuerpo) return;
+  seccion.style.display = 'block';
+  titulo.textContent = 'Cortes de: ' + (nombreServicio || ('servicio #' + servicioId));
+  try {
+    const r = await apiFetch('/servicios/' + servicioId + '/cortes');
+    if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
+    if (!r.datos.length) {
+      cuerpo.innerHTML = '<tr><td colspan="2">Este servicio aún no tiene cortes.</td></tr>';
+    } else {
+      cuerpo.innerHTML = r.datos.map(function (c) {
+        return '<tr><td>' + (c.nombre || 'Corte') + '</td><td>' + (c.descripcion || '') + '</td></tr>';
+      }).join('');
+    }
+    mostrarMensaje('mensaje-cortes', r.datos.length + ' corte(s).', false);
+  } catch (e) {
+    cuerpo.innerHTML = '';
+    mostrarMensaje('mensaje-cortes', 'No se pudieron cargar los cortes: ' + e.message, true);
+  }
+}
+
+// ---- Agendar cita (agendar.html) — MÓDULO DE ERICK, se mantiene tal cual ----
+// POST /api/citas: el cuerpo lleva cliente, barbero, servicio y corte como
+// objetos {id}, más fechaHoraInicio y fechaHoraFin.
 async function agendarCita(event) {
   event.preventDefault();
-  const fecha = document.getElementById('fecha-hora').value;
+  const inicio = document.getElementById('fecha-hora').value;
+  const fin = document.getElementById('fecha-hora-fin').value;
   const cuerpo = {
-    clienteId: Number(document.getElementById('cliente-id').value),
-    barberoId: Number(document.getElementById('barbero-id').value),
-    servicioId: Number(document.getElementById('servicio-id').value),
-    fechaHoraInicio: fecha ? fecha.replace('T', ' ') + ':00' : null,
+    cliente: { id: Number(document.getElementById('cliente-id').value) },
+    barbero: { id: Number(document.getElementById('barbero-id').value) },
+    servicio: { id: Number(document.getElementById('servicio-id').value) },
+    corte: { id: Number(document.getElementById('corte-id').value) },
+    // E4 (arreglo 19/11/2026): las fechas se mandan en ISO con "T"
+    // ("2026-11-19T22:31:00"). Antes se mandaban con espacio
+    // ("2026-11-19 22:31:00") y Jackson no lo puede convertir a LocalDateTime
+    // (Cita.java no tiene @JsonFormat), así que Spring respondía 400
+    // "Bad Request" sin mensaje. Con cURL siempre se usó el formato con T.
+    fechaHoraInicio: inicio ? inicio + ':00' : null,
+    fechaHoraFin: fin ? fin + ':00' : null,
+    notas: document.getElementById('notas-cita').value || null,
   };
   try {
     const resp = await fetch(API_BASE + '/citas', {
@@ -76,48 +154,164 @@ async function agendarCita(event) {
     });
     const datos = await resp.json().catch(function () { return {}; });
     if (!resp.ok) {
-      mostrarMensaje('mensaje-cita', (datos.mensaje || datos.error || 'No se pudo agendar') + ' (HTTP ' + resp.status + ')', true);
+      mostrarMensaje('mensaje-cita', mensajeBackend(datos, 'No se pudo agendar') + ' (HTTP ' + resp.status + ')', true);
       return;
     }
-    mostrarMensaje('mensaje-cita', 'Cita agendada. ID: ' + (datos.id || '(sin id en la respuesta)'), false);
+    mostrarMensaje('mensaje-cita', 'Cita agendada. ID: ' + (datos.id || '(sin id en la respuesta)') + ' · Estado: ' + (datos.estado || 'PENDIENTE'), false);
+    listarMisCitas();
   } catch (e) {
-    mostrarMensaje('mensaje-cita', 'No se pudo conectar con el backend en localhost:8081, o POST /api/citas aún no existe (módulo de Erick).', true);
+    mostrarMensaje('mensaje-cita', 'No se pudo conectar con el backend en localhost:8081.', true);
   }
 }
 
-// ---- Reseñas (resenas.html) ----
-async function cargarResenas(barberoId) {
-  const url = barberoId ? API_BASE + '/resenas?barberoId=' + barberoId : API_BASE + '/resenas';
-  const resp = await fetch(url);
-  if (!resp.ok) {
-    const datos = await resp.json().catch(function () { return {}; });
-    throw new Error(datos.mensaje || datos.error || ('HTTP ' + resp.status));
+// ---- Mis citas: filtros + reprogramar / cancelar — MÓDULO DE ERICK, se mantiene ----
+async function listarMisCitas() {
+  const clienteId = document.getElementById('filtro-cliente-id');
+  const estado = document.getElementById('filtro-estado');
+  const lista = document.getElementById('lista-citas');
+  if (!lista || !clienteId || !clienteId.value) return;
+  try {
+    const resp = await fetch(API_BASE + '/clientes/' + clienteId.value + '/citas');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    let citas = await resp.json();
+    if (estado && estado.value) citas = citas.filter(function (c) { return c.estado === estado.value; });
+    pintarCitas(citas);
+    mostrarMensaje('mensaje-citas', citas.length + ' cita(s).', false);
+  } catch (e) {
+    mostrarMensaje('mensaje-citas', 'No se pudieron cargar las citas: ' + e.message + '. ¿Está corriendo el backend en localhost:8081?', true);
   }
-  return resp.json();
 }
 
-function pintarResenas(resenas) {
-  const lista = document.getElementById('lista-resenas');
-  if (!resenas.length) {
-    lista.innerHTML = '<li>No hay reseñas todavía.</li>';
+function pintarCitas(citas) {
+  const lista = document.getElementById('lista-citas');
+  if (!citas.length) {
+    lista.innerHTML = '<li>No hay citas con ese filtro.</li>';
     return;
   }
-  lista.innerHTML = resenas.map(function (r) {
-    const fecha = r.fechaCreacion ? String(r.fechaCreacion).replace('T', ' ').slice(0, 16) : '';
-    return '<li><span class="estrellas">' + estrellas(r.calificacion) + '</span> ' +
-      '<strong>' + (r.calificacion || '') + '/5</strong>' +
-      '<p>' + (r.comentario || '(sin comentario)') + '</p>' +
-      '<small>Cita #' + (r.citaId || '?') + (fecha ? ' · ' + fecha : '') + '</small></li>';
+  lista.innerHTML = citas.map(function (c) {
+    const inicio = c.fechaHoraInicio ? String(c.fechaHoraInicio).replace('T', ' ').slice(0, 16) : '';
+    const fin = c.fechaHoraFin ? String(c.fechaHoraFin).replace('T', ' ').slice(11, 16) : '';
+    const puedeEditar = c.estado === 'PENDIENTE' || c.estado === 'CONFIRMADA';
+    return '<li><strong>Cita #' + c.id + '</strong> · ' + (c.estado || '') +
+      '<p>' + inicio + (fin ? ' – ' + fin : '') + (c.notas ? ' · ' + c.notas : '') + '</p>' +
+      (puedeEditar
+        ? '<div class="acciones">' +
+          '<button type="button" class="btn btn-pequeno" onclick="pedirReprogramar(' + c.id + ')">Reprogramar</button> ' +
+          '<button type="button" class="btn btn-pequeno btn-peligro" onclick="cancelarCita(' + c.id + ')">Cancelar</button>' +
+          '</div>'
+        : '<small>Esta cita ya no se puede reprogramar ni cancelar (' + (c.estado || '') + ').</small>') +
+      '</li>';
   }).join('');
 }
 
+// PUT /api/citas/{id} — reprograma fecha y notas (Erick, E3).
+function pedirReprogramar(citaId) {
+  document.getElementById('reprogramar-cita-id').value = citaId;
+  document.getElementById('form-reprogramar').style.display = 'block';
+  document.getElementById('form-reprogramar').scrollIntoView({ behavior: 'smooth' });
+}
+
+
+async function reprogramarCita(citaId, inicio, fin, notas) {
+  try {
+    const resp = await fetch(API_BASE + '/citas/' + citaId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fechaHoraInicio: inicio, fechaHoraFin: fin, notas: notas || null }),
+    });
+    const datos = await resp.json().catch(function () { return {}; });
+    if (!resp.ok) {
+      mostrarMensaje('mensaje-citas', mensajeBackend(datos, 'No se pudo reprogramar') + ' (HTTP ' + resp.status + ')', true);
+      return;
+    }
+    mostrarMensaje('mensaje-citas', 'Cita #' + citaId + ' reprogramada.', false);
+    listarMisCitas();
+  } catch (e) {
+    mostrarMensaje('mensaje-citas', 'No se pudo conectar con el backend en localhost:8081.', true);
+  }
+}
+
+async function guardarReprogramacion(event) {
+  event.preventDefault();
+  const citaId = document.getElementById('reprogramar-cita-id').value;
+  const inicio = document.getElementById('reprogramar-inicio').value;
+  const fin = document.getElementById('reprogramar-fin').value;
+  const notas = document.getElementById('reprogramar-notas').value || null;
+  try {
+    const resp = await fetch(API_BASE + '/citas/' + citaId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fechaHoraInicio: inicio ? inicio + ':00' : null, fechaHoraFin: fin ? fin + ':00' : null, notas: notas }),
+    });
+    const datos = await resp.json().catch(function () { return {}; });
+    if (!resp.ok) {
+      mostrarMensaje('mensaje-reprogramar', (datos.mensaje || datos.error || 'No se pudo reprogramar') + ' (HTTP ' + resp.status + ')', true);
+      return;
+    }
+    mostrarMensaje('mensaje-reprogramar', 'Cita #' + citaId + ' reprogramada.', false);
+    document.getElementById('form-reprogramar').style.display = 'none';
+    listarMisCitas();
+  } catch (e) {
+    mostrarMensaje('mensaje-reprogramar', 'No se pudo conectar con el backend en localhost:8081.', true);
+  }
+}
+
+
+// DELETE /api/citas/{id} — cancela la cita (Erick, E3). 204 sin cuerpo.
+async function cancelarCita(citaId) {
+  if (!confirm('¿Cancelar la cita #' + citaId + '?')) return;
+  try {
+    const resp = await fetch(API_BASE + '/citas/' + citaId, { method: 'DELETE' });
+    if (resp.status === 204) {
+      mostrarMensaje('mensaje-citas', 'Cita #' + citaId + ' cancelada.', false);
+      listarMisCitas();
+      return;
+    }
+    const datos = await resp.json().catch(function () { return {}; });
+    mostrarMensaje('mensaje-citas', mensajeBackend(datos, 'No se pudo cancelar') + ' (HTTP ' + resp.status + ')', true);
+  } catch (e) {
+    mostrarMensaje('mensaje-citas', 'No se pudo conectar con el backend en localhost:8081.', true);
+  }
+}
+
+// ---- Reseñas (resenas.html) — MÓDULO DE EMMANUEL, E4: en TABLA ----
+async function cargarResenas(barberoId) {
+  const url = barberoId ? '/resenas?barberoId=' + barberoId : '/resenas';
+  const r = await apiFetch(url);
+  if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
+  return r.datos;
+}
+
+// E4: las reseñas se pintan en tabla (Cita | Calificación | Comentario | Fecha | Acciones).
+function pintarResenas(resenas) {
+  const cuerpo = document.getElementById('cuerpo-resenas');
+  if (!resenas.length) {
+    cuerpo.innerHTML = '<tr><td colspan="5">No hay reseñas todavía.</td></tr>';
+    return;
+  }
+  cuerpo.innerHTML = resenas.map(function (r) {
+    const fecha = r.fechaCreacion ? String(r.fechaCreacion).replace('T', ' ').slice(0, 16) : '';
+    return '<tr><td>#' + (r.citaId || '?') + '</td>' +
+      '<td><span class="estrellas">' + estrellas(r.calificacion) + '</span> ' + (r.calificacion || '') + '/5</td>' +
+      '<td>' + (r.comentario || '(sin comentario)') + '</td>' +
+      '<td>' + fecha + '</td>' +
+      '<td><div class="acciones">' +
+      '<button type="button" class="btn btn-pequeno" onclick="pedirEditarResena(' + r.id + ')">Editar</button> ' +
+      '<button type="button" class="btn btn-pequeno btn-peligro" onclick="eliminarResena(' + r.id + ')">Eliminar</button>' +
+      '</div></td></tr>';
+  }).join('');
+}
+
+let RESENAS_CACHE = [];
 async function listarResenas(barberoId) {
   try {
     const resenas = await cargarResenas(barberoId);
+    RESENAS_CACHE = resenas;
     pintarResenas(resenas);
     mostrarMensaje('mensaje-lista', resenas.length + ' reseña(s).', false);
+    if (barberoId) cargarResumen(barberoId);
   } catch (e) {
-    mostrarMensaje('mensaje-lista', 'No se pudieron cargar las reseñas: ' + e.message + '. ¿Está corriendo el backend en localhost:8081?', true);
+    mostrarMensaje('mensaje-lista', 'No se pudieron cargar las reseñas: ' + e.message, true);
   }
 }
 
@@ -131,11 +325,27 @@ function buscarResenas(event) {
   return listarResenas(id ? Number(id) : null);
 }
 
+// GET /api/resenas/resumen?barberoId= -> { barberoId, promedio, total } (E3).
+async function cargarResumen(barberoId) {
+  const el = document.getElementById('resumen-barbero');
+  if (!el) return;
+  try {
+    const r = await apiFetch('/resenas/resumen?barberoId=' + barberoId);
+    if (!r.ok) {
+      el.textContent = 'Resumen no disponible: ' + mensajeBackend(r.datos, 'HTTP ' + r.status);
+      return;
+    }
+    el.textContent = 'Promedio: ' + estrellas(r.datos.promedio) + ' ' + r.datos.promedio + '/5 · ' + r.datos.total + ' reseña(s).';
+  } catch (e) {
+    el.textContent = 'Resumen no disponible: ' + e.message;
+  }
+}
+
 // POST /api/resenas — 201 / 400 / 403 / 404 / 409 según ResenaControlador.
 async function enviarResena(event) {
   event.preventDefault();
-  const usuarioId = document.getElementById('usuario-id').value;
-  const headers = { 'Content-Type': 'application/json' };
+  const usuarioId = leerUsuarioId();
+  const headers = {};
   if (usuarioId) headers['X-Usuario-Id'] = usuarioId;
   const cuerpo = {
     citaId: Number(document.getElementById('cita-id').value),
@@ -143,22 +353,76 @@ async function enviarResena(event) {
     comentario: document.getElementById('comentario').value,
   };
   try {
-    const resp = await fetch(API_BASE + '/resenas', {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(cuerpo),
-    });
-    const datos = await resp.json().catch(function () { return {}; });
-    if (!resp.ok) {
+    const r = await apiFetch('/resenas', { method: 'POST', headers: headers, body: JSON.stringify(cuerpo) });
+    if (!r.ok) {
       // 400 calificación inválida, 404 cita inexistente, 409 cita no
       // completada o ya reseñada, 403 no eres el cliente de la cita.
-      mostrarMensaje('mensaje-resena', (datos.mensaje || datos.error || 'No se pudo enviar') + ' (HTTP ' + resp.status + ')', true);
+      mostrarMensaje('mensaje-resena', mensajeBackend(r.datos, 'No se pudo enviar') + ' (HTTP ' + r.status + ')', true);
       return;
     }
-    mostrarMensaje('mensaje-resena', 'Reseña guardada. ID: ' + (datos.id || '(sin id en la respuesta)'), false);
+    mostrarMensaje('mensaje-resena', 'Reseña guardada. ID: ' + (r.datos.id || '(sin id en la respuesta)'), false);
     document.getElementById('form-resena').reset();
     listarTodasResenas();
   } catch (e) {
-    mostrarMensaje('mensaje-resena', 'No se pudo conectar con el backend en localhost:8081.', true);
+    mostrarMensaje('mensaje-resena', e.message, true);
+  }
+}
+
+// Editar reseña — PUT /api/resenas/{id} (200 / 400 / 403 / 404) (E3).
+// Solo el cliente de la cita puede editarla: se manda X-Usuario-Id.
+function pedirEditarResena(id) {
+  const r = RESENAS_CACHE.find(function (x) { return x.id === id; });
+  if (!r) return;
+  document.getElementById('editar-resena-id').value = r.id;
+  document.getElementById('editar-calificacion').value = r.calificacion;
+  document.getElementById('editar-comentario').value = r.comentario || '';
+  document.getElementById('form-editar-resena').style.display = 'block';
+  document.getElementById('form-editar-resena').scrollIntoView({ behavior: 'smooth' });
+}
+
+
+async function guardarEdicionResena(event) {
+  event.preventDefault();
+  const id = document.getElementById('editar-resena-id').value;
+  const usuarioId = leerUsuarioId();
+  const headers = {};
+  if (usuarioId) headers['X-Usuario-Id'] = usuarioId;
+  try {
+    const r = await apiFetch('/resenas/' + id, {
+      method: 'PUT',
+      headers: headers,
+      body: JSON.stringify({
+        calificacion: Number(document.getElementById('editar-calificacion').value),
+        comentario: document.getElementById('editar-comentario').value,
+      }),
+    });
+    if (!r.ok) {
+      mostrarMensaje('mensaje-editar', mensajeBackend(r.datos, 'No se pudo editar') + ' (HTTP ' + r.status + ')', true);
+      return;
+    }
+    mostrarMensaje('mensaje-editar', 'Reseña #' + id + ' actualizada.', false);
+    document.getElementById('form-editar-resena').style.display = 'none';
+    listarTodasResenas();
+  } catch (e) {
+    mostrarMensaje('mensaje-editar', e.message, true);
+  }
+}
+
+// Eliminar reseña — DELETE /api/resenas/{id} (204 / 403 / 404) (E3).
+async function eliminarResena(id) {
+  if (!confirm('¿Eliminar la reseña #' + id + '?')) return;
+  const usuarioId = leerUsuarioId();
+  const headers = {};
+  if (usuarioId) headers['X-Usuario-Id'] = usuarioId;
+  try {
+    const r = await apiFetch('/resenas/' + id, { method: 'DELETE', headers: headers });
+    if (r.status === 204) {
+      mostrarMensaje('mensaje-lista', 'Reseña #' + id + ' eliminada.', false);
+      listarTodasResenas();
+      return;
+    }
+    mostrarMensaje('mensaje-lista', mensajeBackend(r.datos, 'No se pudo eliminar') + ' (HTTP ' + r.status + ')', true);
+  } catch (e) {
+    mostrarMensaje('mensaje-lista', e.message, true);
   }
 }

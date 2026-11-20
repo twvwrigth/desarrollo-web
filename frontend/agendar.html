@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Barbería — Agendar cita</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
   <header class="topbar">
     <h1>Barbería</h1>
@@ -78,6 +80,29 @@
       <p id="mensaje-citas" class="mensaje" aria-live="polite"></p>
       <ul id="lista-citas" class="lista-resenas"></ul>
     </section>
+    <!-- Reprogramar:formulario en la página. -->
+    <section class="card" id="form-reprogramar" style="display: none;">
+      <h3>Reprogramar cita</h3>
+      <form id="form-reprogramar-cita" class="form">
+        <input type="hidden" id="reprogramar-cita-id">
+        <label>
+          Nueva fecha y hora de inicio
+          <input type="datetime-local" id="reprogramar-inicio" required>
+        </label>
+        <label>
+          Nueva fecha y hora de fin
+          <input type="datetime-local" id="reprogramar-fin" required>
+        </label>
+        <label>
+          Observaciones / notas
+          <textarea id="reprogramar-notas" rows="2"></textarea>
+        </label>
+        <button type="submit" class="btn">Guardar nueva fecha</button>
+        <button type="button" class="btn btn-secundario" id="btn-cancelar-reprogramar">Cancelar</button>
+        <p id="mensaje-reprogramar" class="mensaje" aria-live="polite"></p>
+      </form>
+    </section>
+
   </main>
 
   <footer>
@@ -91,6 +116,11 @@
       e.preventDefault();
       listarMisCitas();
     });
+    document.getElementById('form-reprogramar-cita').addEventListener('submit', guardarReprogramacion);
+    document.getElementById('btn-cancelar-reprogramar').addEventListener('click', function () {
+      document.getElementById('form-reprogramar').style.display = 'none';
+    });
   </script>
 </body>
+
 </html>

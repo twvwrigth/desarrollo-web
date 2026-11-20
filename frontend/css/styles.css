@@ -1,4 +1,3 @@
-
 * { box-sizing: border-box; }
 
 body {
@@ -33,6 +32,8 @@ body {
 
 .topbar nav a.activo,
 .topbar nav a:hover { background: #c9a227; color: #1c1c1c; }
+
+.sesion { font-size: 0.9rem; color: #e8d98a; }
 
 main {
   max-width: 900px;
@@ -102,9 +103,32 @@ h2 { margin-top: 0.5rem; }
   padding: 0.6rem 0.8rem;
 }
 
-.mensaje { font-weight: 600; min-height: 1.2em; }
-.mensaje.error { color: #a10000; }
-.mensaje.exito { color: #0a6b2d; }
+/* E4: mensajes de error y confirmación con caja, no solo texto de color. */
+.mensaje { font-weight: 600; min-height: 1.2em; padding: 0.2rem 0.4rem; border-radius: 6px; }
+.mensaje.error { color: #a10000; background: #fde8e8; }
+.mensaje.exito { color: #0a6b2d; background: #e6f4ea; }
+
+/* E4: tablas (servicios, cortes, reseñas). */
+.tabla-scroll { overflow-x: auto; }
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+}
+
+.tabla th,
+.tabla td {
+  border: 1px solid #ddd;
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.tabla thead th { background: #1c1c1c; color: #f4f1ea; }
+.tabla tbody tr:nth-child(even) { background: #faf8f2; }
+
+.tabla .estrellas { color: #c9a227; letter-spacing: 0.1rem; }
 
 .lista-resenas { list-style: none; padding: 0; }
 .lista-resenas li {
@@ -113,7 +137,6 @@ h2 { margin-top: 0.5rem; }
 }
 .lista-resenas .estrellas { color: #c9a227; letter-spacing: 0.1rem; }
 .lista-resenas small { color: #666; }
-
 
 .btn-pequeno { padding: 0.35rem 0.7rem; font-size: 0.9rem; }
 .btn-peligro { background: #a10000; color: #fff; }
