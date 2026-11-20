@@ -43,6 +43,12 @@ public class UsuarioControlador {
                     .body(Map.of("error", "Datos invalidos", "mensaje", "nombre, email y password son obligatorios"));
         }
 
+        // E4: la contrasena debe tener al menos 6 caracteres.
+        if (usuario.getPassword().length() < 6) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Datos invalidos", "mensaje", "password debe tener al menos 6 caracteres"));
+        }
+
         String email = usuario.getEmail().trim().toLowerCase();
         usuario.setEmail(email);
 
@@ -154,6 +160,11 @@ public class UsuarioControlador {
             if (cambios.getPassword().isBlank()) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Datos invalidos", "mensaje", "password no puede ir vacio"));
+            }
+            // E4: igual que en el registro, al menos 6 caracteres.
+            if (cambios.getPassword().length() < 6) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Datos invalidos", "mensaje", "password debe tener al menos 6 caracteres"));
             }
             actual.setPassword(encoder.encode(cambios.getPassword()));
         }
