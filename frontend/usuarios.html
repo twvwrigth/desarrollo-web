@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbería — Usuarios</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Barbería</h1>
+    <nav>
+      <a href="index.html">Servicios</a>
+      <a href="agendar.html">Agendar cita</a>
+      <a href="resenas.html">Reseñas</a>
+      <a href="login.html">Iniciar sesión</a>
+      <a href="registro.html">Registro</a>
+      <a href="usuarios.html" class="activo">Usuarios</a>
+      <a href="horarios.html">Horarios</a>
+    </nav>
+    <span id="sesion-info" class="sesion"></span>
+  </header>
+
+  <main>
+    <h2>Usuarios</h2>
+
+    <section class="card">
+      <h3>Tabla de usuarios</h3>
+      <form id="form-filtro-usuarios" class="form-inline">
+        <label>
+          Rol
+          <select id="filtro-rol">
+            <option value="">Todos</option>
+            <option value="CLIENTE">Cliente</option>
+            <option value="BARBERO">Barbero</option>
+            <option value="ADMIN">Administrador</option>
+          </select>
+        </label>
+        <label>
+          <input type="checkbox" id="mostrar-inactivos">
+          Mostrar inactivos
+        </label>
+        <button type="submit" class="btn">Buscar</button>
+      </form>
+      <p id="mensaje-usuarios" class="mensaje" aria-live="polite"></p>
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead>
+            <tr><th>ID</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="cuerpo-usuarios" aria-live="polite">
+            <tr><td colspan="7">Cargando usuarios…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="nota"><strong>Desactivar</strong> es una baja lógica (DELETE, 204): el usuario queda con activo=false y ya no sale en el listado normal. Para volver a verlo marca <strong>Mostrar inactivos</strong> y usa <strong>Reactivar</strong> (PUT /api/usuarios/{id}/estado). La contraseña nunca se muestra en la tabla.</p>
+    </section>
+
+    <section class="card" id="seccion-editar-usuario" style="display: none;">
+      <h3>Editar usuario</h3>
+      <form id="form-editar-usuario" class="form">
+        <input type="hidden" id="editar-usuario-id">
+        <label>
+          Nombre
+          <input type="text" id="editar-usuario-nombre" required>
+        </label>
+        <label>
+          Email
+          <input type="email" id="editar-usuario-email" required>
+        </label>
+        <label>
+          Teléfono
+          <input type="tel" id="editar-usuario-telefono">
+        </label>
+        <label>
+          Contraseña nueva (vacío = no se cambia)
+          <input type="password" id="editar-usuario-password" minlength="6" placeholder="Vacío = no se cambia (mínimo 6 si la cambias)">
+        </label>
+        <button type="submit" class="btn">Guardar cambios</button>
+        <button type="button" class="btn btn-secundario" id="btn-cancelar-editar-usuario">Cancelar</button>
+        <p id="mensaje-editar-usuario" class="mensaje" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer>
+    <p>Proyecto desarrollo-web — UV · Entrega: 23 de noviembre de 2026</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/usuarios.js"></script>
+  <script>
+    pintarSesion();
+    document.getElementById('form-filtro-usuarios').addEventListener('submit', function (e) {
+      e.preventDefault();
+      cargarUsuarios();
+    });
+    document.getElementById('form-editar-usuario').addEventListener('submit', guardarEdicionUsuario);
+    document.getElementById('btn-cancelar-editar-usuario').addEventListener('click', function () {
+      document.getElementById('seccion-editar-usuario').style.display = 'none';
+    });
+    cargarUsuarios();
+  </script>
+</body>
+</html>

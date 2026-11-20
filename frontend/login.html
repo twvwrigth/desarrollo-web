@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbería — Iniciar sesión</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Barbería</h1>
+    <nav>
+      <a href="index.html">Servicios</a>
+      <a href="agendar.html">Agendar cita</a>
+      <a href="resenas.html">Reseñas</a>
+      <a href="login.html" class="activo">Iniciar sesión</a>
+      <a href="registro.html">Registro</a>
+      <a href="usuarios.html">Usuarios</a>
+      <a href="horarios.html">Horarios</a>
+    </nav>
+    <span id="sesion-info" class="sesion"></span>
+  </header>
+
+  <main>
+    <h2>Iniciar sesión</h2>
+
+    <form id="form-login" class="card form">
+      <label>
+        Email
+        <input type="email" id="login-email" required placeholder="Ej. admin@barberia.com">
+      </label>
+      <label>
+        Contraseña
+        <input type="password" id="login-password" required placeholder="Tu contraseña">
+      </label>
+      <button type="submit" class="btn">Entrar</button>
+      <p id="mensaje-login" class="mensaje" aria-live="polite"></p>
+    </form>
+
+    <section class="card">
+      <h3>Sesión actual</h3>
+      <p id="sesion-actual" class="nota">No hay sesión activa.</p>
+      <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion" style="display: none;">Cerrar sesión</button>
+      <p class="nota">Al entrar, tu ID se guarda en la sesión y se manda como <strong>X-Usuario-Id</strong> en cada petición (así el backend sabe quién eres). La sesión se borra al cerrar la pestaña.</p>
+      <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a>.</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>Proyecto desarrollo-web — UV · Entrega: 23 de noviembre de 2026</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script src="js/usuarios.js"></script>
+  <script>
+    pintarSesion();
+    document.getElementById('form-login').addEventListener('submit', iniciarSesion);
+    document.getElementById('btn-cerrar-sesion').addEventListener('click', cerrarSesion);
+  </script>
+</body>
+</html>
