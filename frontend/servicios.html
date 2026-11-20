@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Barbería — Servicios y cortes (admin)</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Barbería</h1>
+    <nav>
+      <a href="index.html">Servicios</a>
+      <a href="agendar.html">Agendar cita</a>
+      <a href="resenas.html">Reseñas</a>
+      <a href="servicios.html" class="activo">Servicios (admin)</a>
+      <a href="cotizaciones.html">Cotizaciones</a>
+    </nav>
+    <span id="sesion-info" class="sesion"></span>
+  </header>
+
+  <main>
+    <h2>Servicios y cortes — Administración</h2>
+    <p class="nota">Crear, editar y eliminar servicios y cortes es <strong>solo para administradores</strong>: el backend pide el ID de un admin activo (X-Usuario-Id) y responde 403 si no lo eres. Las eliminaciones son bajas lógicas: el registro queda inactivo y ya no aparece en el catálogo.</p>
+
+    <section class="card">
+      <h3>Tu ID de administrador</h3>
+      <form class="form-inline" onsubmit="return false;">
+        <label>
+          ID de administrador
+          <input type="number" id="admin-id" min="1" placeholder="Ej. 1">
+        </label>
+      </form>
+      <p class="nota">Si hay sesión guardada se usa su ID; si no, pon aquí el ID del admin (se manda como X-Usuario-Id en cada alta, edición y baja).</p>
+    </section>
+
+    <section class="card">
+      <h3>Servicios</h3>
+      <p id="mensaje-servicios" class="mensaje" aria-live="polite"></p>
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead>
+            <tr><th>Servicio</th><th>Descripción</th><th>Duración</th><th>Precio</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="cuerpo-servicios-admin" aria-live="polite">
+            <tr><td colspan="5">Cargando servicios…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3 id="titulo-form-servicio">Nuevo servicio</h3>
+      <form id="form-servicio" class="form">
+        <input type="hidden" id="servicio-id">
+        <label>
+          Nombre
+          <input type="text" id="servicio-nombre" required placeholder="Ej. Corte clásico" maxlength="100">
+        </label>
+        <label>
+          Descripción
+          <textarea id="servicio-descripcion" rows="2" placeholder="Ej. Corte con tijera y máquina"></textarea>
+        </label>
+        <label>
+          Duración (minutos)
+          <input type="number" id="servicio-duracion" min="1" required placeholder="Ej. 30">
+        </label>
+        <label>
+          Precio
+          <input type="number" id="servicio-precio" min="0" step="0.01" required placeholder="Ej. 150.00">
+        </label>
+        <button type="submit" class="btn">Guardar servicio</button>
+        <button type="button" class="btn btn-secundario" id="btn-cancelar-servicio" style="display: none;">Cancelar edición</button>
+        <p id="mensaje-servicio" class="mensaje" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section class="card">
+      <h3 id="titulo-cortes-admin">Cortes</h3>
+      <form class="form-inline" onsubmit="return false;">
+        <label>
+          Servicio
+          <select id="corte-servicio-id"></select>
+        </label>
+        <button type="button" class="btn" id="btn-ver-cortes">Ver cortes</button>
+      </form>
+      <p id="mensaje-cortes" class="mensaje" aria-live="polite"></p>
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead>
+            <tr><th>Corte</th><th>Descripción</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="cuerpo-cortes-admin" aria-live="polite">
+            <tr><td colspan="3">Elige un servicio para ver sus cortes.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3 id="titulo-form-corte">Nuevo corte</h3>
+      <form id="form-corte" class="form">
+        <input type="hidden" id="corte-id">
+        <label>
+          Nombre
+          <input type="text" id="corte-nombre" required placeholder="Ej. Fade" maxlength="100">
+        </label>
+        <label>
+          Descripción
+          <textarea id="corte-descripcion" rows="2" placeholder="Ej. Degradado con navaja"></textarea>
+        </label>
+        <label>
+          Imagen (URL)
+          <input type="text" id="corte-imagen" placeholder="Ej. https://…/fade.jpg">
+        </label>
+        <label>
+          Overlay (URL, para el probador virtual)
+          <input type="text" id="corte-overlay" placeholder="Ej. https://…/fade-overlay.png">
+        </label>
+        <button type="submit" class="btn">Guardar corte</button>
+        <button type="button" class="btn btn-secundario" id="btn-cancelar-corte" style="display: none;">Cancelar edición</button>
+        <p id="mensaje-corte" class="mensaje" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script src="js/servicios.js"></script>
+  <script>
+    mostrarSesion();
+    cargarServiciosAdmin();
+    cargarServiciosEnSelect('corte-servicio-id').then(cargarCortesAdmin);
+    document.getElementById('btn-ver-cortes').addEventListener('click', cargarCortesAdmin);
+    document.getElementById('corte-servicio-id').addEventListener('change', cargarCortesAdmin);
+    document.getElementById('form-servicio').addEventListener('submit', guardarServicio);
+    document.getElementById('btn-cancelar-servicio').addEventListener('click', cancelarEdicionServicio);
+    document.getElementById('form-corte').addEventListener('submit', guardarCorte);
+    document.getElementById('btn-cancelar-corte').addEventListener('click', cancelarEdicionCorte);
+  </script>
+</body>
+</html>

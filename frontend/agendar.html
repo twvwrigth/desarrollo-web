@@ -80,7 +80,7 @@
       <p id="mensaje-citas" class="mensaje" aria-live="polite"></p>
       <ul id="lista-citas" class="lista-resenas"></ul>
     </section>
-    <!-- Reprogramar:formulario en la página. -->
+    
     <section class="card" id="form-reprogramar" style="display: none;">
       <h3>Reprogramar cita</h3>
       <form id="form-reprogramar-cita" class="form">
@@ -103,13 +103,24 @@
       </form>
     </section>
 
+    <section class="card" id="form-cambiar-estado" style="display: none;">
+      <h3 id="titulo-estado-cita">Cambiar estado de la cita</h3>
+      <form id="form-estado-cita" class="form">
+        <input type="hidden" id="estado-cita-id">
+        <label>
+          Nuevo estado
+          <select id="estado-nuevo" required></select>
+        </label>
+        <p class="nota">Solo el cliente, el barbero o un admin pueden cambiar el estado. Se manda tu ID de cliente del filtro de "Mis citas" como X-Usuario-Id.</p>
+        <button type="submit" class="btn">Guardar estado</button>
+        <button type="button" class="btn btn-secundario" id="btn-cancelar-estado">Cancelar</button>
+        <p id="mensaje-estado" class="mensaje" aria-live="polite"></p>
+      </form>
+    </section>
+
   </main>
-
-  <footer>
-    <p>Proyecto desarrollo-web — UV · Entrega: 23 de noviembre de 2026</p>
-  </footer>
-
   <script src="js/app.js"></script>
+  <script src="js/citas.js"></script>
   <script>
     document.getElementById('form-cita').addEventListener('submit', agendarCita);
     document.getElementById('form-filtro-citas').addEventListener('submit', function (e) {
@@ -119,6 +130,10 @@
     document.getElementById('form-reprogramar-cita').addEventListener('submit', guardarReprogramacion);
     document.getElementById('btn-cancelar-reprogramar').addEventListener('click', function () {
       document.getElementById('form-reprogramar').style.display = 'none';
+    });
+    document.getElementById('form-estado-cita').addEventListener('submit', guardarCambioEstadoCita);
+    document.getElementById('btn-cancelar-estado').addEventListener('click', function () {
+      document.getElementById('form-cambiar-estado').style.display = 'none';
     });
   </script>
 </body>

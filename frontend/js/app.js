@@ -1,7 +1,6 @@
-// Frontend E4 (sistema integrado) — José Emmanuel.
+// Frontend
 // Consume la API en http://localhost:8081/api (backend en WSL, ./mvnw spring-boot:run desde demo/).
 //.
-
 const API_BASE = 'http://localhost:8081/api';
 
 
@@ -19,10 +18,6 @@ async function apiFetch(ruta, opciones) {
   const datos = await resp.json().catch(function () { return {}; });
   return { ok: resp.ok, status: resp.status, datos: datos };
 }
-
-// Sesión: José Luis guarda el usuario en sessionStorage al hacer login
-// (E2). Si hay un usuarioId guardado, se usa para X-Usuario-Id; si no,
-// se usa el campo manual "Tu ID de cliente" de resenas.html.
 function sesionUsuarioId() {
   try {
     const v = sessionStorage.getItem('usuarioId');
@@ -37,7 +32,7 @@ function leerUsuarioId() {
   return el && el.value ? Number(el.value) : null;
 }
 
-// Muestra en la barra superior quién está en sesión, si hay sesión.
+// Muestra en la barra superior quién está en sesión
 function mostrarSesion() {
   const el = document.getElementById('sesion-info');
   if (!el) return;
@@ -45,7 +40,7 @@ function mostrarSesion() {
   el.textContent = id ? ('Sesión: usuario #' + id) : '';
 }
 
-// Muestra el "mensaje" que manda el backend: {"error": "...", "mensaje": "..."}.
+// Muestra el "mensaje" que manda el backend
 function mostrarMensaje(id, texto, esError) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -62,7 +57,7 @@ function estrellas(n) {
   return '★'.repeat(v) + '☆'.repeat(5 - v);
 }
 
-// ---- Servicios y cortes (index.html) — solo lectura, E4: en TABLA ----
+// ---- Servicios y cortes
 const SERVICIOS_EJEMPLO = [
   { nombre: 'Corte clásico', descripcion: 'Corte con tijera y máquina', duracionMin: 30, precio: 150.00 },
   { nombre: 'Corte + barba', descripcion: 'Corte clásico y arreglo de barba', duracionMin: 45, precio: 200.00 },
@@ -99,7 +94,7 @@ function pintarServicios(servicios) {
   }).join('');
 }
 
-// Cortes de un servicio — GET /api/servicios/{id}/cortes (Erick, E2).
+// Cortes de un servicio
 async function cargarCortes(servicioId, nombreServicio) {
   const seccion = document.getElementById('seccion-cortes');
   const titulo = document.getElementById('titulo-cortes');
@@ -124,10 +119,6 @@ async function cargarCortes(servicioId, nombreServicio) {
     mostrarMensaje('mensaje-cortes', 'No se pudieron cargar los cortes: ' + e.message, true);
   }
 }
-
-// ---- Agendar cita (agendar.html) — MÓDULO DE ERICK, se mantiene tal cual ----
-// POST /api/citas: el cuerpo lleva cliente, barbero, servicio y corte como
-// objetos {id}, más fechaHoraInicio y fechaHoraFin.
 async function agendarCita(event) {
   event.preventDefault();
   const inicio = document.getElementById('fecha-hora').value;
@@ -137,11 +128,6 @@ async function agendarCita(event) {
     barbero: { id: Number(document.getElementById('barbero-id').value) },
     servicio: { id: Number(document.getElementById('servicio-id').value) },
     corte: { id: Number(document.getElementById('corte-id').value) },
-    // E4 (arreglo 19/11/2026): las fechas se mandan en ISO con "T"
-    // ("2026-11-19T22:31:00"). Antes se mandaban con espacio
-    // ("2026-11-19 22:31:00") y Jackson no lo puede convertir a LocalDateTime
-    // (Cita.java no tiene @JsonFormat), así que Spring respondía 400
-    // "Bad Request" sin mensaje. Con cURL siempre se usó el formato con T.
     fechaHoraInicio: inicio ? inicio + ':00' : null,
     fechaHoraFin: fin ? fin + ':00' : null,
     notas: document.getElementById('notas-cita').value || null,
@@ -163,8 +149,6 @@ async function agendarCita(event) {
     mostrarMensaje('mensaje-cita', 'No se pudo conectar con el backend en localhost:8081.', true);
   }
 }
-
-// ---- Mis citas: filtros + reprogramar / cancelar — MÓDULO DE ERICK, se mantiene ----
 async function listarMisCitas() {
   const clienteId = document.getElementById('filtro-cliente-id');
   const estado = document.getElementById('filtro-estado');
@@ -197,6 +181,7 @@ function pintarCitas(citas) {
       (puedeEditar
         ? '<div class="acciones">' +
           '<button type="button" class="btn btn-pequeno" onclick="pedirReprogramar(' + c.id + ')">Reprogramar</button> ' +
+          '<button type="button" class="btn btn-pequeno" onclick="pedirCambiarEstadoCita(' + c.id + ', \'' + (c.estado || '') + '\')">Estado</button> ' +
           '<button type="button" class="btn btn-pequeno btn-peligro" onclick="cancelarCita(' + c.id + ')">Cancelar</button>' +
           '</div>'
         : '<small>Esta cita ya no se puede reprogramar ni cancelar (' + (c.estado || '') + ').</small>') +
@@ -204,7 +189,7 @@ function pintarCitas(citas) {
   }).join('');
 }
 
-// PUT /api/citas/{id} — reprograma fecha y notas (Erick, E3).
+//Reprograma fecha y notas.
 function pedirReprogramar(citaId) {
   document.getElementById('reprogramar-cita-id').value = citaId;
   document.getElementById('form-reprogramar').style.display = 'block';
@@ -257,7 +242,7 @@ async function guardarReprogramacion(event) {
 }
 
 
-// DELETE /api/citas/{id} — cancela la cita (Erick, E3). 204 sin cuerpo.
+//cancela la cita
 async function cancelarCita(citaId) {
   if (!confirm('¿Cancelar la cita #' + citaId + '?')) return;
   try {
@@ -325,7 +310,6 @@ function buscarResenas(event) {
   return listarResenas(id ? Number(id) : null);
 }
 
-// GET /api/resenas/resumen?barberoId= -> { barberoId, promedio, total } (E3).
 async function cargarResumen(barberoId) {
   const el = document.getElementById('resumen-barbero');
   if (!el) return;
@@ -340,8 +324,6 @@ async function cargarResumen(barberoId) {
     el.textContent = 'Resumen no disponible: ' + e.message;
   }
 }
-
-// POST /api/resenas — 201 / 400 / 403 / 404 / 409 según ResenaControlador.
 async function enviarResena(event) {
   event.preventDefault();
   const usuarioId = leerUsuarioId();
@@ -355,8 +337,6 @@ async function enviarResena(event) {
   try {
     const r = await apiFetch('/resenas', { method: 'POST', headers: headers, body: JSON.stringify(cuerpo) });
     if (!r.ok) {
-      // 400 calificación inválida, 404 cita inexistente, 409 cita no
-      // completada o ya reseñada, 403 no eres el cliente de la cita.
       mostrarMensaje('mensaje-resena', mensajeBackend(r.datos, 'No se pudo enviar') + ' (HTTP ' + r.status + ')', true);
       return;
     }
@@ -368,7 +348,6 @@ async function enviarResena(event) {
   }
 }
 
-// Editar reseña — PUT /api/resenas/{id} (200 / 400 / 403 / 404) (E3).
 // Solo el cliente de la cita puede editarla: se manda X-Usuario-Id.
 function pedirEditarResena(id) {
   const r = RESENAS_CACHE.find(function (x) { return x.id === id; });
@@ -407,8 +386,7 @@ async function guardarEdicionResena(event) {
     mostrarMensaje('mensaje-editar', e.message, true);
   }
 }
-
-// Eliminar reseña — DELETE /api/resenas/{id} (204 / 403 / 404) (E3).
+// Eliminar reseña
 async function eliminarResena(id) {
   if (!confirm('¿Eliminar la reseña #' + id + '?')) return;
   const usuarioId = leerUsuarioId();
