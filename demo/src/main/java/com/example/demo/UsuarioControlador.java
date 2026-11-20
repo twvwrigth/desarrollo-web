@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -84,23 +85,39 @@ public class UsuarioControlador {
     }
 
     // E3: GET /api/usuarios?rol=BARBERO -> 200 (filtrable por rol; sin filtro lista activos)
+    // E4: ?activos=false incluye tambien a los dados de baja (activo=false).
+    // Sin el parametro (o con activos=true) el comportamiento es el de E3: solo activos.
     @GetMapping("/api/usuarios")
-    public ResponseEntity<?> listar(@RequestParam(value = "rol", required = false) String rol) {
-        if (rol == null || rol.isBlank()) {
-            return ResponseEntity.ok(iusuario.findByActivoTrue());
+    public ResponseEntity<?> listar(@RequestParam(value = "rol", required = false) String rol,
+                                    @RequestParam(value = "activos", required = false, defaultValue = "true") boolean soloActivos) {
+        Rol rolEnum = null;
+        if (rol != null && !rol.isBlank()) {
+            try {
+                rolEnum = Rol.valueOf(rol.trim().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Datos invalidos", "mensaje", "rol debe ser CLIENTE, BARBERO o ADMIN"));
+            }
         }
-        Rol rolEnum;
-        try {
-            rolEnum = Rol.valueOf(rol.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Datos invalidos", "mensaje", "rol debe ser CLIENTE, BARBERO o ADMIN"));
+        if (soloActivos) {
+            if (rolEnum == null) {
+                return ResponseEntity.ok(iusuario.findByActivoTrue());
+            }
+            return ResponseEntity.ok(iusuario.findByRolAndActivoTrue(rolEnum));
         }
-        return ResponseEntity.ok(iusuario.findByRolAndActivoTrue(rolEnum));
+        // E4: con activos=false se listan todos (activos e inactivos), con filtro por rol si se pidio.
+        List<Usuario> todos = new ArrayList<>();
+        iusuario.findAll().forEach(todos::add);
+        if (rolEnum != null) {
+            Rol filtro = rolEnum;
+            todos.removeIf(u -> u.getRol() != filtro);
+        }
+        return ResponseEntity.ok(todos);
     }
 
     // E3: PUT /api/usuarios/{id} -> 200 / 400 / 404 / 409
     // Edita perfil (nombre, email, telefono, password). No cambia rol ni activo.
+    // Para activar/desactivar se usa PUT /api/usuarios/{id}/estado (E4).
     @PutMapping("/api/usuarios/{id}")
     public ResponseEntity<?> editar(@PathVariable Integer id, @RequestBody Usuario cambios) {
         Optional<Usuario> actualOpt = iusuario.findById(id);
@@ -140,6 +157,29 @@ public class UsuarioControlador {
             }
             actual.setPassword(encoder.encode(cambios.getPassword()));
         }
+        return ResponseEntity.ok(iusuario.save(actual));
+    }
+
+    // E4: PUT /api/usuarios/{id}/estado -> 200 / 400 / 404
+    // Activa o desactiva un usuario. Cuerpo: {"activo": true} o {"activo": false}.
+    // A diferencia del PUT de perfil, este SI acepta usuarios dados de baja,
+    // porque si no, un usuario desactivado jamas se podria reactivar (el GET
+    // y el PUT de perfil devuelven 404 para inactivos). Sin "activo" -> 400.
+    // Igual que el DELETE de E3, no pide ser ADMIN (el reparto E4 no lo exige).
+    @PutMapping("/api/usuarios/{id}/estado")
+    public ResponseEntity<?> cambiarEstado(@PathVariable Integer id, @RequestBody Map<String, Object> cuerpo) {
+        Optional<Usuario> actualOpt = iusuario.findById(id);
+        if (actualOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "No encontrado", "mensaje", "Usuario no encontrado"));
+        }
+        Object activo = cuerpo == null ? null : cuerpo.get("activo");
+        if (!(activo instanceof Boolean)) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Datos invalidos", "mensaje", "activo debe ser true o false"));
+        }
+        Usuario actual = actualOpt.get();
+        actual.setActivo((Boolean) activo);
         return ResponseEntity.ok(iusuario.save(actual));
     }
 
