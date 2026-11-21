@@ -39,6 +39,46 @@ async function listarResenas(barberoId) {
   }
 }
 
+// Label con nombres de barberos para "Ver reseñas de un barbero".
+async function cargarBarberosParaResenas() {
+  const sel = document.getElementById('buscar-barbero-select');
+  if (!sel) return;
+  try {
+    const r = await apiFetch('/usuarios?rol=BARBERO');
+    if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
+    sel.innerHTML = '<option value="">— todos —</option>' + r.datos.map(function (b) {
+      return '<option value="' + b.id + '">' + (b.nombre || ('Barbero #' + b.id)) + '</option>';
+    }).join('');
+  } catch (e) {
+    sel.innerHTML = '<option value="">No se pudieron cargar los barberos</option>';
+  }
+}
+
+// Si el usuario está logueado, precarga su ID y el ID de su última cita COMPLETADA
+// en el formulario de "Dejar una reseña".
+async function precargarDatosResena() {
+  const usuarioId = sesionUsuarioId();
+  if (!usuarioId) return;
+  const campoUsuario = document.getElementById('usuario-id');
+  if (campoUsuario) {
+    campoUsuario.value = usuarioId;
+    campoUsuario.readOnly = true;
+  }
+  try {
+    const r = await apiFetch('/clientes/' + usuarioId + '/citas');
+    if (!r.ok) return;
+    const completadas = (r.datos || []).filter(function (c) { return c.estado === 'COMPLETADA'; });
+    if (!completadas.length) return;
+    completadas.sort(function (a, b) {
+      return new Date(b.fechaHoraInicio) - new Date(a.fechaHoraInicio);
+    });
+    const campoCita = document.getElementById('cita-id');
+    if (campoCita) campoCita.value = completadas[0].id;
+  } catch (e) {
+    // sin conexión al backend: se deja el campo vacío
+  }
+}
+
 function listarTodasResenas() {
   return listarResenas(null);
 }

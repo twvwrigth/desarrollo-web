@@ -21,8 +21,6 @@
 
   <main>
     <h2>Servicios y cortes — Administración</h2>
-    <p class="nota">Crear, editar y eliminar servicios y cortes es <strong>solo para administradores</strong>: el backend pide el ID de un admin activo (X-Usuario-Id) y responde 403 si no lo eres. Las eliminaciones son bajas lógicas: el registro queda inactivo y ya no aparece en el catálogo.</p>
-
     <section class="card">
       <h3>Tu ID de administrador</h3>
       <form class="form-inline" onsubmit="return false;">
@@ -31,7 +29,6 @@
           <input type="number" id="admin-id" min="1" placeholder="Ej. 1">
         </label>
       </form>
-      <p class="nota">Si hay sesión guardada se usa su ID; si no, pon aquí el ID del admin (se manda como X-Usuario-Id en cada alta, edición y baja).</p>
     </section>
 
     <section class="card">
@@ -128,6 +125,10 @@
   <script src="js/servicios.js"></script>
   <script>
     mostrarSesion();
+    (function () {
+      var sesionId = sesionUsuarioId();
+      if (sesionId) document.getElementById('admin-id').value = sesionId;
+    })();
     cargarServiciosAdmin();
     cargarServiciosEnSelect('corte-servicio-id').then(cargarCortesAdmin);
     document.getElementById('btn-ver-cortes').addEventListener('click', cargarCortesAdmin);
