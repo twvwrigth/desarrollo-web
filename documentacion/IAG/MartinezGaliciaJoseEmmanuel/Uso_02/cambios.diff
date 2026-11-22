@@ -1,0 +1,166 @@
+diff --git a/demo/src/main/java/com/example/demo/ResenaControlador.java b/demo/src/main/java/com/example/demo/ResenaControlador.java
+index 5903052..422fee6 100644
+--- a/demo/src/main/java/com/example/demo/ResenaControlador.java
++++ b/demo/src/main/java/com/example/demo/ResenaControlador.java
+@@ -9,18 +9,17 @@ import org.springframework.beans.factory.annotation.Autowired;
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.web.bind.annotation.CrossOrigin;
++import org.springframework.web.bind.annotation.DeleteMapping;
+ import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.PathVariable;
+ import org.springframework.web.bind.annotation.PostMapping;
++import org.springframework.web.bind.annotation.PutMapping;
+ import org.springframework.web.bind.annotation.RequestBody;
+ import org.springframework.web.bind.annotation.RequestHeader;
+ import org.springframework.web.bind.annotation.RequestParam;
+ import org.springframework.web.bind.annotation.RestController;
+ 
+-// Compatible con la Cita REAL de Erick (commit 2a6af52, 13 nov 21:46):
+-// getEstado() devuelve el enum EstadoCita, no String, y no hay
+-// getClienteId()/getBarberoId(): el cliente es Usuario (getCliente().getId()).
+-// La Cita provisional ya NO se usa: borrar Cita.java/ICita.java locales
+-// antes de hacer git pull, o el pull va a chocar con los de Erick.
++
+ @CrossOrigin(origins = "*")
+ @RestController
+ public class ResenaControlador {
+@@ -31,9 +30,9 @@ public class ResenaControlador {
+     @Autowired
+     ICita icita;
+ 
+-    // E2: POST /api/resenas -> 201 / 400 / 403 / 404 / 409
+-    // Reglas: RF-20 / RN-05: solo se resena una cita COMPLETADA, una resena por
+-    // cita y solo el cliente de esa cita. Calificacion solo de 1 a 5.
++    @Autowired
++    IUsuario iusuario;
++
+     @PostMapping("/api/resenas")
+     public ResponseEntity<?> crear(@RequestBody Resena resena,
+                                    @RequestHeader(value = "X-Usuario-Id", required = false) Integer usuarioId) {
+@@ -59,9 +58,7 @@ public class ResenaControlador {
+                     .body(Map.of("error", "Conflicto", "mensaje", "Solo se puede resenar una cita COMPLETADA"));
+         }
+ 
+-        // RN-05: solo el cliente de esa cita. Si el frontend no manda el header,
+-        // no se puede comprobar: se deja pasar, igual que el resto del equipo
+-        // documenta X-Usuario-Id como simplificacion sin Spring Security.
++
+         if (usuarioId != null && cita.get().getCliente() != null
+                 && !usuarioId.equals(cita.get().getCliente().getId())) {
+             return ResponseEntity.status(HttpStatus.FORBIDDEN)
+@@ -78,9 +75,6 @@ public class ResenaControlador {
+         return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
+     }
+ 
+-    // E2: GET /api/resenas?barberoId= -> 200
+-    // RF-21: consultar resenas por barbero. Sin barberoId, lista todas.
+-    // El barbero se resuelve por la cita (cita.barbero_id), segun esquema.sql.
+     @GetMapping("/api/resenas")
+     public ResponseEntity<?> listar(@RequestParam(value = "barberoId", required = false) Integer barberoId) {
+         if (barberoId == null) {
+@@ -97,4 +91,102 @@ public class ResenaControlador {
+ 
+         return ResponseEntity.ok(iresena.findByCitaIdIn(citaIds));
+     }
+-}
+\ No newline at end of file
++
++    @GetMapping("/api/resenas/resumen")
++    public ResponseEntity<?> resumen(@RequestParam(value = "barberoId", required = false) Integer barberoId) {
++        if (barberoId == null) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "barberoId es obligatorio"));
++        }
++
++        Optional<Usuario> barbero = iusuario.findById(barberoId);
++        if (barbero.isEmpty() || barbero.get().getRol() != Rol.BARBERO) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Barbero no encontrado"));
++        }
++
++        List<Integer> citaIds = icita.findByBarberoId(barberoId).stream()
++                .map(Cita::getId)
++                .collect(Collectors.toList());
++
++        if (citaIds.isEmpty()) {
++            return ResponseEntity.ok(Map.of("barberoId", barberoId, "promedio", 0.0, "total", 0));
++        }
++
++        List<Resena> resenas = iresena.findByCitaIdIn(citaIds);
++        double promedio = resenas.stream()
++                .mapToInt(Resena::getCalificacion)
++                .average()
++                .orElse(0.0);
++        promedio = Math.round(promedio * 10.0) / 10.0;
++
++        return ResponseEntity.ok(Map.of("barberoId", barberoId, "promedio", promedio, "total", resenas.size()));
++    }
++
++    @PutMapping("/api/resenas/{id}")
++    public ResponseEntity<?> editar(@PathVariable Integer id,
++                                    @RequestBody Resena cambios,
++                                    @RequestHeader(value = "X-Usuario-Id", required = false) Integer usuarioId) {
++        Optional<Resena> existente = iresena.findById(id);
++        if (existente.isEmpty()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Resena no encontrada"));
++        }
++
++        if (cambios.getCalificacion() != null
++                && (cambios.getCalificacion() < 1 || cambios.getCalificacion() > 5)) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "La calificacion debe ser de 1 a 5"));
++        }
++
++
++        if (usuarioId != null) {
++            Integer clienteId = clienteDeLaResena(existente.get());
++            if (clienteId != null && !usuarioId.equals(clienteId)) {
++                return ResponseEntity.status(HttpStatus.FORBIDDEN)
++                        .body(Map.of("error", "Sin permiso", "mensaje", "Solo el cliente de la cita puede editar su resena"));
++            }
++        }
++
++        Resena resena = existente.get();
++        if (cambios.getCalificacion() != null) {
++            resena.setCalificacion(cambios.getCalificacion());
++        }
++        if (cambios.getComentario() != null) {
++            resena.setComentario(cambios.getComentario());
++        }
++
++        return ResponseEntity.ok(iresena.save(resena));
++    }
++
++
++    @DeleteMapping("/api/resenas/{id}")
++    public ResponseEntity<?> eliminar(@PathVariable Integer id,
++                                      @RequestHeader(value = "X-Usuario-Id", required = false) Integer usuarioId) {
++        Optional<Resena> existente = iresena.findById(id);
++        if (existente.isEmpty()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Resena no encontrada"));
++        }
++
++        if (usuarioId != null) {
++            Integer clienteId = clienteDeLaResena(existente.get());
++            if (clienteId != null && !usuarioId.equals(clienteId)) {
++                return ResponseEntity.status(HttpStatus.FORBIDDEN)
++                        .body(Map.of("error", "Sin permiso", "mensaje", "Solo el cliente de la cita puede eliminar su resena"));
++            }
++        }
++
++        iresena.deleteById(id);
++        return ResponseEntity.noContent().build();
++    }
++
++
++    private Integer clienteDeLaResena(Resena resena) {
++        Optional<Cita> cita = icita.findById(resena.getCitaId());
++        if (cita.isEmpty() || cita.get().getCliente() == null) {
++            return null;
++        }
++        return cita.get().getCliente().getId();
++    }
++}
