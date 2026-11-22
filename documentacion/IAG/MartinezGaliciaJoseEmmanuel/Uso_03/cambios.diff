@@ -1,0 +1,738 @@
+diff --git a/frontend/agendar.html b/frontend/agendar.html
+index 27b6a73..95af905 100644
+--- a/frontend/agendar.html
++++ b/frontend/agendar.html
+@@ -1,11 +1,13 @@
+ <!DOCTYPE html>
+ <html lang="es">
++
+ <head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Barbería — Agendar cita</title>
+   <link rel="stylesheet" href="css/styles.css">
+ </head>
++
+ <body>
+   <header class="topbar">
+     <h1>Barbería</h1>
+@@ -78,6 +80,29 @@
+       <p id="mensaje-citas" class="mensaje" aria-live="polite"></p>
+       <ul id="lista-citas" class="lista-resenas"></ul>
+     </section>
++    <!-- Reprogramar:formulario en la página. -->
++    <section class="card" id="form-reprogramar" style="display: none;">
++      <h3>Reprogramar cita</h3>
++      <form id="form-reprogramar-cita" class="form">
++        <input type="hidden" id="reprogramar-cita-id">
++        <label>
++          Nueva fecha y hora de inicio
++          <input type="datetime-local" id="reprogramar-inicio" required>
++        </label>
++        <label>
++          Nueva fecha y hora de fin
++          <input type="datetime-local" id="reprogramar-fin" required>
++        </label>
++        <label>
++          Observaciones / notas
++          <textarea id="reprogramar-notas" rows="2"></textarea>
++        </label>
++        <button type="submit" class="btn">Guardar nueva fecha</button>
++        <button type="button" class="btn btn-secundario" id="btn-cancelar-reprogramar">Cancelar</button>
++        <p id="mensaje-reprogramar" class="mensaje" aria-live="polite"></p>
++      </form>
++    </section>
++
+   </main>
+ 
+   <footer>
+@@ -91,6 +116,11 @@
+       e.preventDefault();
+       listarMisCitas();
+     });
++    document.getElementById('form-reprogramar-cita').addEventListener('submit', guardarReprogramacion);
++    document.getElementById('btn-cancelar-reprogramar').addEventListener('click', function () {
++      document.getElementById('form-reprogramar').style.display = 'none';
++    });
+   </script>
+ </body>
+-</html>
++
++</html>
+\ No newline at end of file
+diff --git a/frontend/css/styles.css b/frontend/css/styles.css
+index ce7250f..3250297 100644
+--- a/frontend/css/styles.css
++++ b/frontend/css/styles.css
+@@ -1,4 +1,3 @@
+-
+ * { box-sizing: border-box; }
+ 
+ body {
+@@ -34,6 +33,8 @@ body {
+ .topbar nav a.activo,
+ .topbar nav a:hover { background: #c9a227; color: #1c1c1c; }
+ 
++.sesion { font-size: 0.9rem; color: #e8d98a; }
++
+ main {
+   max-width: 900px;
+   margin: 0 auto;
+@@ -102,9 +103,32 @@ h2 { margin-top: 0.5rem; }
+   padding: 0.6rem 0.8rem;
+ }
+ 
+-.mensaje { font-weight: 600; min-height: 1.2em; }
+-.mensaje.error { color: #a10000; }
+-.mensaje.exito { color: #0a6b2d; }
++/* E4: mensajes de error y confirmación con caja, no solo texto de color. */
++.mensaje { font-weight: 600; min-height: 1.2em; padding: 0.2rem 0.4rem; border-radius: 6px; }
++.mensaje.error { color: #a10000; background: #fde8e8; }
++.mensaje.exito { color: #0a6b2d; background: #e6f4ea; }
++
++/* E4: tablas (servicios, cortes, reseñas). */
++.tabla-scroll { overflow-x: auto; }
++
++.tabla {
++  width: 100%;
++  border-collapse: collapse;
++  margin: 0.5rem 0;
++}
++
++.tabla th,
++.tabla td {
++  border: 1px solid #ddd;
++  padding: 0.5rem 0.7rem;
++  text-align: left;
++  vertical-align: top;
++}
++
++.tabla thead th { background: #1c1c1c; color: #f4f1ea; }
++.tabla tbody tr:nth-child(even) { background: #faf8f2; }
++
++.tabla .estrellas { color: #c9a227; letter-spacing: 0.1rem; }
+ 
+ .lista-resenas { list-style: none; padding: 0; }
+ .lista-resenas li {
+@@ -114,7 +138,6 @@ h2 { margin-top: 0.5rem; }
+ .lista-resenas .estrellas { color: #c9a227; letter-spacing: 0.1rem; }
+ .lista-resenas small { color: #666; }
+ 
+-
+ .btn-pequeno { padding: 0.35rem 0.7rem; font-size: 0.9rem; }
+ .btn-peligro { background: #a10000; color: #fff; }
+ .acciones { margin-top: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; }
+diff --git a/frontend/index.html b/frontend/index.html
+index 15b50a4..5a70924 100644
+--- a/frontend/index.html
++++ b/frontend/index.html
+@@ -8,19 +8,47 @@
+ </head>
+ <body>
+   <header class="topbar">
+-    <h1>Barbería</h1>
++    <h1>💈 Barbería</h1>
+     <nav>
+       <a href="index.html" class="activo">Servicios</a>
+       <a href="agendar.html">Agendar cita</a>
+       <a href="resenas.html">Reseñas</a>
+     </nav>
++    <span id="sesion-info" class="sesion"></span>
+   </header>
+ 
+   <main>
+     <h2>Servicios y cortes</h2>
+     <p class="nota" id="aviso-servicios"></p>
+-    <section id="lista-servicios" class="grid" aria-live="polite">
+-      <p>Cargando servicios…</p>
++
++    <!-- E4: tabla de servicios (GET /api/servicios). Cada fila tiene su botón
++         "Ver cortes", que llena la tabla de cortes de abajo. -->
++    <section class="card">
++      <h3>Servicios</h3>
++      <div class="tabla-scroll">
++        <table class="tabla">
++          <thead>
++            <tr><th>Servicio</th><th>Descripción</th><th>Duración</th><th>Precio</th><th></th></tr>
++          </thead>
++          <tbody id="cuerpo-servicios" aria-live="polite">
++            <tr><td colspan="5">Cargando servicios…</td></tr>
++          </tbody>
++        </table>
++      </div>
++    </section>
++
++    <!-- E4: tabla de cortes del servicio elegido (GET /api/servicios/{id}/cortes). -->
++    <section class="card" id="seccion-cortes" style="display: none;">
++      <h3 id="titulo-cortes">Cortes</h3>
++      <div class="tabla-scroll">
++        <table class="tabla">
++          <thead>
++            <tr><th>Corte</th><th>Descripción</th></tr>
++          </thead>
++          <tbody id="cuerpo-cortes"></tbody>
++        </table>
++      </div>
++      <p id="mensaje-cortes" class="mensaje" aria-live="polite"></p>
+     </section>
+ 
+     <section class="card">
+@@ -37,6 +65,7 @@
+ 
+   <script src="js/app.js"></script>
+   <script>
++    mostrarSesion();
+     cargarServicios();
+   </script>
+ </body>
+diff --git a/frontend/js/app.js b/frontend/js/app.js
+index 458295e..994bfe2 100644
+--- a/frontend/js/app.js
++++ b/frontend/js/app.js
+@@ -1,11 +1,50 @@
+-// Esqueleto frontend E2 — José Emmanuel.
+-// Consume la API en http://localhost:8081/api (backend en WSL, ./mvnw spring-boot:run).
+-// Reseñas: endpoints reales de ResenaControlador (POST y GET /api/resenas).
+-// Servicios y citas: endpoints aún no existen en el repo; el código lo dice
+-// claro y usa datos de ejemplo en vez de fingir que el backend respondió.
++// Frontend E4 (sistema integrado) — José Emmanuel.
++// Consume la API en http://localhost:8081/api (backend en WSL, ./mvnw spring-boot:run desde demo/).
++//.
+ 
+ const API_BASE = 'http://localhost:8081/api';
+ 
++
++async function apiFetch(ruta, opciones) {
++  const opts = opciones || {};
++  const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
++  const usuarioId = sesionUsuarioId();
++  if (usuarioId && !headers['X-Usuario-Id']) headers['X-Usuario-Id'] = usuarioId;
++  let resp;
++  try {
++    resp = await fetch(API_BASE + ruta, Object.assign({}, opts, { headers: headers }));
++  } catch (e) {
++    throw new Error('No se pudo conectar con el backend en localhost:8081.');
++  }
++  const datos = await resp.json().catch(function () { return {}; });
++  return { ok: resp.ok, status: resp.status, datos: datos };
++}
++
++// Sesión: José Luis guarda el usuario en sessionStorage al hacer login
++// (E2). Si hay un usuarioId guardado, se usa para X-Usuario-Id; si no,
++// se usa el campo manual "Tu ID de cliente" de resenas.html.
++function sesionUsuarioId() {
++  try {
++    const v = sessionStorage.getItem('usuarioId');
++    return v ? Number(v) : null;
++  } catch (e) { return null; }
++}
++
++function leerUsuarioId() {
++  const sesion = sesionUsuarioId();
++  if (sesion) return sesion;
++  const el = document.getElementById('usuario-id');
++  return el && el.value ? Number(el.value) : null;
++}
++
++// Muestra en la barra superior quién está en sesión, si hay sesión.
++function mostrarSesion() {
++  const el = document.getElementById('sesion-info');
++  if (!el) return;
++  const id = sesionUsuarioId();
++  el.textContent = id ? ('Sesión: usuario #' + id) : '';
++}
++
+ // Muestra el "mensaje" que manda el backend: {"error": "...", "mensaje": "..."}.
+ function mostrarMensaje(id, texto, esError) {
+   const el = document.getElementById(id);
+@@ -14,14 +53,16 @@ function mostrarMensaje(id, texto, esError) {
+   el.className = 'mensaje ' + (esError ? 'error' : 'exito');
+ }
+ 
++function mensajeBackend(datos, porDefecto) {
++  return datos.mensaje || datos.error || porDefecto;
++}
++
+ function estrellas(n) {
+   const v = Math.max(0, Math.min(5, Number(n) || 0));
+   return '★'.repeat(v) + '☆'.repeat(5 - v);
+ }
+ 
+-// ---- Servicios (index.html) ----
+-// GET /api/servicios aún no existe. Si algún día existe, se usa; si no,
+-// se muestran los servicios de ejemplo del cURL de reseñas.
++// ---- Servicios y cortes (index.html) — solo lectura, E4: en TABLA ----
+ const SERVICIOS_EJEMPLO = [
+   { nombre: 'Corte clásico', descripcion: 'Corte con tijera y máquina', duracionMin: 30, precio: 150.00 },
+   { nombre: 'Corte + barba', descripcion: 'Corte clásico y arreglo de barba', duracionMin: 45, precio: 200.00 },
+@@ -29,44 +70,81 @@ const SERVICIOS_EJEMPLO = [
+ ];
+ 
+ async function cargarServicios() {
+-  const lista = document.getElementById('lista-servicios');
++  const cuerpo = document.getElementById('cuerpo-servicios');
+   const aviso = document.getElementById('aviso-servicios');
+-  if (!lista) return;
++  if (!cuerpo) return;
+   try {
+-    const resp = await fetch(API_BASE + '/servicios');
+-    if (!resp.ok) throw new Error('sin endpoint');
+-    const servicios = await resp.json();
+-    pintarServicios(servicios);
++    const r = await apiFetch('/servicios');
++    if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
++    pintarServicios(r.datos);
+     if (aviso) aviso.textContent = '';
+   } catch (e) {
+     pintarServicios(SERVICIOS_EJEMPLO);
+-    if (aviso) aviso.textContent = 'Mostrando servicios de ejemplo: GET /api/servicios aún no existe en el backend.';
++    if (aviso) aviso.textContent = 'Mostrando servicios de ejemplo: ' + e.message + ' (GET /api/servicios).';
+   }
+ }
+ 
+ function pintarServicios(servicios) {
+-  const lista = document.getElementById('lista-servicios');
+-  lista.innerHTML = servicios.map(function (s) {
+-    const nombre = s.nombre || 'Servicio';
+-    const desc = s.descripcion || '';
++  const cuerpo = document.getElementById('cuerpo-servicios');
++  if (!servicios.length) {
++    cuerpo.innerHTML = '<tr><td colspan="5">No hay servicios todavía.</td></tr>';
++    return;
++  }
++  cuerpo.innerHTML = servicios.map(function (s) {
+     const dur = s.duracionMin || s.duracion_min || '';
+     const precio = s.precio != null ? '$' + Number(s.precio).toFixed(2) : '';
+-    return '<article class="servicio"><h3>' + nombre + '</h3><p>' + desc + '</p>' +
+-      '<p>' + (dur ? dur + ' min · ' : '') + '<span class="precio">' + precio + '</span></p></article>';
++    return '<tr><td>' + (s.nombre || 'Servicio') + '</td><td>' + (s.descripcion || '') + '</td>' +
++      '<td>' + (dur ? dur + ' min' : '') + '</td><td>' + precio + '</td>' +
++      '<td><button type="button" class="btn btn-pequeno" onclick="cargarCortes(' + s.id + ', \'' + (s.nombre || '').replace(/'/g, '') + '\')">Ver cortes</button></td></tr>';
+   }).join('');
+ }
+ 
+-// ---- Agendar cita (agendar.html) ----
+-// POST /api/citas es de Erick y aún no existe. El formulario ya manda el
+-// cuerpo esperado; si el endpoint responde 404, se avisa en vez de fingir éxito.
++// Cortes de un servicio — GET /api/servicios/{id}/cortes (Erick, E2).
++async function cargarCortes(servicioId, nombreServicio) {
++  const seccion = document.getElementById('seccion-cortes');
++  const titulo = document.getElementById('titulo-cortes');
++  const cuerpo = document.getElementById('cuerpo-cortes');
++  const mensaje = document.getElementById('mensaje-cortes');
++  if (!cuerpo) return;
++  seccion.style.display = 'block';
++  titulo.textContent = 'Cortes de: ' + (nombreServicio || ('servicio #' + servicioId));
++  try {
++    const r = await apiFetch('/servicios/' + servicioId + '/cortes');
++    if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
++    if (!r.datos.length) {
++      cuerpo.innerHTML = '<tr><td colspan="2">Este servicio aún no tiene cortes.</td></tr>';
++    } else {
++      cuerpo.innerHTML = r.datos.map(function (c) {
++        return '<tr><td>' + (c.nombre || 'Corte') + '</td><td>' + (c.descripcion || '') + '</td></tr>';
++      }).join('');
++    }
++    mostrarMensaje('mensaje-cortes', r.datos.length + ' corte(s).', false);
++  } catch (e) {
++    cuerpo.innerHTML = '';
++    mostrarMensaje('mensaje-cortes', 'No se pudieron cargar los cortes: ' + e.message, true);
++  }
++}
++
++// ---- Agendar cita (agendar.html) — MÓDULO DE ERICK, se mantiene tal cual ----
++// POST /api/citas: el cuerpo lleva cliente, barbero, servicio y corte como
++// objetos {id}, más fechaHoraInicio y fechaHoraFin.
+ async function agendarCita(event) {
+   event.preventDefault();
+-  const fecha = document.getElementById('fecha-hora').value;
++  const inicio = document.getElementById('fecha-hora').value;
++  const fin = document.getElementById('fecha-hora-fin').value;
+   const cuerpo = {
+-    clienteId: Number(document.getElementById('cliente-id').value),
+-    barberoId: Number(document.getElementById('barbero-id').value),
+-    servicioId: Number(document.getElementById('servicio-id').value),
+-    fechaHoraInicio: fecha ? fecha.replace('T', ' ') + ':00' : null,
++    cliente: { id: Number(document.getElementById('cliente-id').value) },
++    barbero: { id: Number(document.getElementById('barbero-id').value) },
++    servicio: { id: Number(document.getElementById('servicio-id').value) },
++    corte: { id: Number(document.getElementById('corte-id').value) },
++    // E4 (arreglo 19/11/2026): las fechas se mandan en ISO con "T"
++    // ("2026-11-19T22:31:00"). Antes se mandaban con espacio
++    // ("2026-11-19 22:31:00") y Jackson no lo puede convertir a LocalDateTime
++    // (Cita.java no tiene @JsonFormat), así que Spring respondía 400
++    // "Bad Request" sin mensaje. Con cURL siempre se usó el formato con T.
++    fechaHoraInicio: inicio ? inicio + ':00' : null,
++    fechaHoraFin: fin ? fin + ':00' : null,
++    notas: document.getElementById('notas-cita').value || null,
+   };
+   try {
+     const resp = await fetch(API_BASE + '/citas', {
+@@ -76,48 +154,164 @@ async function agendarCita(event) {
+     });
+     const datos = await resp.json().catch(function () { return {}; });
+     if (!resp.ok) {
+-      mostrarMensaje('mensaje-cita', (datos.mensaje || datos.error || 'No se pudo agendar') + ' (HTTP ' + resp.status + ')', true);
++      mostrarMensaje('mensaje-cita', mensajeBackend(datos, 'No se pudo agendar') + ' (HTTP ' + resp.status + ')', true);
+       return;
+     }
+-    mostrarMensaje('mensaje-cita', 'Cita agendada. ID: ' + (datos.id || '(sin id en la respuesta)'), false);
++    mostrarMensaje('mensaje-cita', 'Cita agendada. ID: ' + (datos.id || '(sin id en la respuesta)') + ' · Estado: ' + (datos.estado || 'PENDIENTE'), false);
++    listarMisCitas();
+   } catch (e) {
+-    mostrarMensaje('mensaje-cita', 'No se pudo conectar con el backend en localhost:8081, o POST /api/citas aún no existe (módulo de Erick).', true);
++    mostrarMensaje('mensaje-cita', 'No se pudo conectar con el backend en localhost:8081.', true);
+   }
+ }
+ 
+-// ---- Reseñas (resenas.html) ----
+-async function cargarResenas(barberoId) {
+-  const url = barberoId ? API_BASE + '/resenas?barberoId=' + barberoId : API_BASE + '/resenas';
+-  const resp = await fetch(url);
+-  if (!resp.ok) {
++// ---- Mis citas: filtros + reprogramar / cancelar — MÓDULO DE ERICK, se mantiene ----
++async function listarMisCitas() {
++  const clienteId = document.getElementById('filtro-cliente-id');
++  const estado = document.getElementById('filtro-estado');
++  const lista = document.getElementById('lista-citas');
++  if (!lista || !clienteId || !clienteId.value) return;
++  try {
++    const resp = await fetch(API_BASE + '/clientes/' + clienteId.value + '/citas');
++    if (!resp.ok) throw new Error('HTTP ' + resp.status);
++    let citas = await resp.json();
++    if (estado && estado.value) citas = citas.filter(function (c) { return c.estado === estado.value; });
++    pintarCitas(citas);
++    mostrarMensaje('mensaje-citas', citas.length + ' cita(s).', false);
++  } catch (e) {
++    mostrarMensaje('mensaje-citas', 'No se pudieron cargar las citas: ' + e.message + '. ¿Está corriendo el backend en localhost:8081?', true);
++  }
++}
++
++function pintarCitas(citas) {
++  const lista = document.getElementById('lista-citas');
++  if (!citas.length) {
++    lista.innerHTML = '<li>No hay citas con ese filtro.</li>';
++    return;
++  }
++  lista.innerHTML = citas.map(function (c) {
++    const inicio = c.fechaHoraInicio ? String(c.fechaHoraInicio).replace('T', ' ').slice(0, 16) : '';
++    const fin = c.fechaHoraFin ? String(c.fechaHoraFin).replace('T', ' ').slice(11, 16) : '';
++    const puedeEditar = c.estado === 'PENDIENTE' || c.estado === 'CONFIRMADA';
++    return '<li><strong>Cita #' + c.id + '</strong> · ' + (c.estado || '') +
++      '<p>' + inicio + (fin ? ' – ' + fin : '') + (c.notas ? ' · ' + c.notas : '') + '</p>' +
++      (puedeEditar
++        ? '<div class="acciones">' +
++          '<button type="button" class="btn btn-pequeno" onclick="pedirReprogramar(' + c.id + ')">Reprogramar</button> ' +
++          '<button type="button" class="btn btn-pequeno btn-peligro" onclick="cancelarCita(' + c.id + ')">Cancelar</button>' +
++          '</div>'
++        : '<small>Esta cita ya no se puede reprogramar ni cancelar (' + (c.estado || '') + ').</small>') +
++      '</li>';
++  }).join('');
++}
++
++// PUT /api/citas/{id} — reprograma fecha y notas (Erick, E3).
++function pedirReprogramar(citaId) {
++  document.getElementById('reprogramar-cita-id').value = citaId;
++  document.getElementById('form-reprogramar').style.display = 'block';
++  document.getElementById('form-reprogramar').scrollIntoView({ behavior: 'smooth' });
++}
++
++
++async function reprogramarCita(citaId, inicio, fin, notas) {
++  try {
++    const resp = await fetch(API_BASE + '/citas/' + citaId, {
++      method: 'PUT',
++      headers: { 'Content-Type': 'application/json' },
++      body: JSON.stringify({ fechaHoraInicio: inicio, fechaHoraFin: fin, notas: notas || null }),
++    });
++    const datos = await resp.json().catch(function () { return {}; });
++    if (!resp.ok) {
++      mostrarMensaje('mensaje-citas', mensajeBackend(datos, 'No se pudo reprogramar') + ' (HTTP ' + resp.status + ')', true);
++      return;
++    }
++    mostrarMensaje('mensaje-citas', 'Cita #' + citaId + ' reprogramada.', false);
++    listarMisCitas();
++  } catch (e) {
++    mostrarMensaje('mensaje-citas', 'No se pudo conectar con el backend en localhost:8081.', true);
++  }
++}
++
++async function guardarReprogramacion(event) {
++  event.preventDefault();
++  const citaId = document.getElementById('reprogramar-cita-id').value;
++  const inicio = document.getElementById('reprogramar-inicio').value;
++  const fin = document.getElementById('reprogramar-fin').value;
++  const notas = document.getElementById('reprogramar-notas').value || null;
++  try {
++    const resp = await fetch(API_BASE + '/citas/' + citaId, {
++      method: 'PUT',
++      headers: { 'Content-Type': 'application/json' },
++      body: JSON.stringify({ fechaHoraInicio: inicio ? inicio + ':00' : null, fechaHoraFin: fin ? fin + ':00' : null, notas: notas }),
++    });
+     const datos = await resp.json().catch(function () { return {}; });
+-    throw new Error(datos.mensaje || datos.error || ('HTTP ' + resp.status));
++    if (!resp.ok) {
++      mostrarMensaje('mensaje-reprogramar', (datos.mensaje || datos.error || 'No se pudo reprogramar') + ' (HTTP ' + resp.status + ')', true);
++      return;
++    }
++    mostrarMensaje('mensaje-reprogramar', 'Cita #' + citaId + ' reprogramada.', false);
++    document.getElementById('form-reprogramar').style.display = 'none';
++    listarMisCitas();
++  } catch (e) {
++    mostrarMensaje('mensaje-reprogramar', 'No se pudo conectar con el backend en localhost:8081.', true);
++  }
++}
++
++
++// DELETE /api/citas/{id} — cancela la cita (Erick, E3). 204 sin cuerpo.
++async function cancelarCita(citaId) {
++  if (!confirm('¿Cancelar la cita #' + citaId + '?')) return;
++  try {
++    const resp = await fetch(API_BASE + '/citas/' + citaId, { method: 'DELETE' });
++    if (resp.status === 204) {
++      mostrarMensaje('mensaje-citas', 'Cita #' + citaId + ' cancelada.', false);
++      listarMisCitas();
++      return;
++    }
++    const datos = await resp.json().catch(function () { return {}; });
++    mostrarMensaje('mensaje-citas', mensajeBackend(datos, 'No se pudo cancelar') + ' (HTTP ' + resp.status + ')', true);
++  } catch (e) {
++    mostrarMensaje('mensaje-citas', 'No se pudo conectar con el backend en localhost:8081.', true);
+   }
+-  return resp.json();
+ }
+ 
++// ---- Reseñas (resenas.html) — MÓDULO DE EMMANUEL, E4: en TABLA ----
++async function cargarResenas(barberoId) {
++  const url = barberoId ? '/resenas?barberoId=' + barberoId : '/resenas';
++  const r = await apiFetch(url);
++  if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
++  return r.datos;
++}
++
++// E4: las reseñas se pintan en tabla (Cita | Calificación | Comentario | Fecha | Acciones).
+ function pintarResenas(resenas) {
+-  const lista = document.getElementById('lista-resenas');
++  const cuerpo = document.getElementById('cuerpo-resenas');
+   if (!resenas.length) {
+-    lista.innerHTML = '<li>No hay reseñas todavía.</li>';
++    cuerpo.innerHTML = '<tr><td colspan="5">No hay reseñas todavía.</td></tr>';
+     return;
+   }
+-  lista.innerHTML = resenas.map(function (r) {
++  cuerpo.innerHTML = resenas.map(function (r) {
+     const fecha = r.fechaCreacion ? String(r.fechaCreacion).replace('T', ' ').slice(0, 16) : '';
+-    return '<li><span class="estrellas">' + estrellas(r.calificacion) + '</span> ' +
+-      '<strong>' + (r.calificacion || '') + '/5</strong>' +
+-      '<p>' + (r.comentario || '(sin comentario)') + '</p>' +
+-      '<small>Cita #' + (r.citaId || '?') + (fecha ? ' · ' + fecha : '') + '</small></li>';
++    return '<tr><td>#' + (r.citaId || '?') + '</td>' +
++      '<td><span class="estrellas">' + estrellas(r.calificacion) + '</span> ' + (r.calificacion || '') + '/5</td>' +
++      '<td>' + (r.comentario || '(sin comentario)') + '</td>' +
++      '<td>' + fecha + '</td>' +
++      '<td><div class="acciones">' +
++      '<button type="button" class="btn btn-pequeno" onclick="pedirEditarResena(' + r.id + ')">Editar</button> ' +
++      '<button type="button" class="btn btn-pequeno btn-peligro" onclick="eliminarResena(' + r.id + ')">Eliminar</button>' +
++      '</div></td></tr>';
+   }).join('');
+ }
+ 
++let RESENAS_CACHE = [];
+ async function listarResenas(barberoId) {
+   try {
+     const resenas = await cargarResenas(barberoId);
++    RESENAS_CACHE = resenas;
+     pintarResenas(resenas);
+     mostrarMensaje('mensaje-lista', resenas.length + ' reseña(s).', false);
++    if (barberoId) cargarResumen(barberoId);
+   } catch (e) {
+-    mostrarMensaje('mensaje-lista', 'No se pudieron cargar las reseñas: ' + e.message + '. ¿Está corriendo el backend en localhost:8081?', true);
++    mostrarMensaje('mensaje-lista', 'No se pudieron cargar las reseñas: ' + e.message, true);
+   }
+ }
+ 
+@@ -131,11 +325,27 @@ function buscarResenas(event) {
+   return listarResenas(id ? Number(id) : null);
+ }
+ 
++// GET /api/resenas/resumen?barberoId= -> { barberoId, promedio, total } (E3).
++async function cargarResumen(barberoId) {
++  const el = document.getElementById('resumen-barbero');
++  if (!el) return;
++  try {
++    const r = await apiFetch('/resenas/resumen?barberoId=' + barberoId);
++    if (!r.ok) {
++      el.textContent = 'Resumen no disponible: ' + mensajeBackend(r.datos, 'HTTP ' + r.status);
++      return;
++    }
++    el.textContent = 'Promedio: ' + estrellas(r.datos.promedio) + ' ' + r.datos.promedio + '/5 · ' + r.datos.total + ' reseña(s).';
++  } catch (e) {
++    el.textContent = 'Resumen no disponible: ' + e.message;
++  }
++}
++
+ // POST /api/resenas — 201 / 400 / 403 / 404 / 409 según ResenaControlador.
+ async function enviarResena(event) {
+   event.preventDefault();
+-  const usuarioId = document.getElementById('usuario-id').value;
+-  const headers = { 'Content-Type': 'application/json' };
++  const usuarioId = leerUsuarioId();
++  const headers = {};
+   if (usuarioId) headers['X-Usuario-Id'] = usuarioId;
+   const cuerpo = {
+     citaId: Number(document.getElementById('cita-id').value),
+@@ -143,22 +353,76 @@ async function enviarResena(event) {
+     comentario: document.getElementById('comentario').value,
+   };
+   try {
+-    const resp = await fetch(API_BASE + '/resenas', {
+-      method: 'POST',
+-      headers: headers,
+-      body: JSON.stringify(cuerpo),
+-    });
+-    const datos = await resp.json().catch(function () { return {}; });
+-    if (!resp.ok) {
++    const r = await apiFetch('/resenas', { method: 'POST', headers: headers, body: JSON.stringify(cuerpo) });
++    if (!r.ok) {
+       // 400 calificación inválida, 404 cita inexistente, 409 cita no
+       // completada o ya reseñada, 403 no eres el cliente de la cita.
+-      mostrarMensaje('mensaje-resena', (datos.mensaje || datos.error || 'No se pudo enviar') + ' (HTTP ' + resp.status + ')', true);
++      mostrarMensaje('mensaje-resena', mensajeBackend(r.datos, 'No se pudo enviar') + ' (HTTP ' + r.status + ')', true);
+       return;
+     }
+-    mostrarMensaje('mensaje-resena', 'Reseña guardada. ID: ' + (datos.id || '(sin id en la respuesta)'), false);
++    mostrarMensaje('mensaje-resena', 'Reseña guardada. ID: ' + (r.datos.id || '(sin id en la respuesta)'), false);
+     document.getElementById('form-resena').reset();
+     listarTodasResenas();
+   } catch (e) {
+-    mostrarMensaje('mensaje-resena', 'No se pudo conectar con el backend en localhost:8081.', true);
++    mostrarMensaje('mensaje-resena', e.message, true);
++  }
++}
++
++// Editar reseña — PUT /api/resenas/{id} (200 / 400 / 403 / 404) (E3).
++// Solo el cliente de la cita puede editarla: se manda X-Usuario-Id.
++function pedirEditarResena(id) {
++  const r = RESENAS_CACHE.find(function (x) { return x.id === id; });
++  if (!r) return;
++  document.getElementById('editar-resena-id').value = r.id;
++  document.getElementById('editar-calificacion').value = r.calificacion;
++  document.getElementById('editar-comentario').value = r.comentario || '';
++  document.getElementById('form-editar-resena').style.display = 'block';
++  document.getElementById('form-editar-resena').scrollIntoView({ behavior: 'smooth' });
++}
++
++
++async function guardarEdicionResena(event) {
++  event.preventDefault();
++  const id = document.getElementById('editar-resena-id').value;
++  const usuarioId = leerUsuarioId();
++  const headers = {};
++  if (usuarioId) headers['X-Usuario-Id'] = usuarioId;
++  try {
++    const r = await apiFetch('/resenas/' + id, {
++      method: 'PUT',
++      headers: headers,
++      body: JSON.stringify({
++        calificacion: Number(document.getElementById('editar-calificacion').value),
++        comentario: document.getElementById('editar-comentario').value,
++      }),
++    });
++    if (!r.ok) {
++      mostrarMensaje('mensaje-editar', mensajeBackend(r.datos, 'No se pudo editar') + ' (HTTP ' + r.status + ')', true);
++      return;
++    }
++    mostrarMensaje('mensaje-editar', 'Reseña #' + id + ' actualizada.', false);
++    document.getElementById('form-editar-resena').style.display = 'none';
++    listarTodasResenas();
++  } catch (e) {
++    mostrarMensaje('mensaje-editar', e.message, true);
++  }
++}
++
++// Eliminar reseña — DELETE /api/resenas/{id} (204 / 403 / 404) (E3).
++async function eliminarResena(id) {
++  if (!confirm('¿Eliminar la reseña #' + id + '?')) return;
++  const usuarioId = leerUsuarioId();
++  const headers = {};
++  if (usuarioId) headers['X-Usuario-Id'] = usuarioId;
++  try {
++    const r = await apiFetch('/resenas/' + id, { method: 'DELETE', headers: headers });
++    if (r.status === 204) {
++      mostrarMensaje('mensaje-lista', 'Reseña #' + id + ' eliminada.', false);
++      listarTodasResenas();
++      return;
++    }
++    mostrarMensaje('mensaje-lista', mensajeBackend(r.datos, 'No se pudo eliminar') + ' (HTTP ' + r.status + ')', true);
++  } catch (e) {
++    mostrarMensaje('mensaje-lista', e.message, true);
+   }
+ }
+diff --git a/frontend/resenas.html b/frontend/resenas.html
+index 4e6853c..5f0ba76 100644
+--- a/frontend/resenas.html
++++ b/frontend/resenas.html
+@@ -14,6 +14,7 @@
+       <a href="agendar.html">Agendar cita</a>
+       <a href="resenas.html" class="activo">Reseñas</a>
+     </nav>
++    <span id="sesion-info" class="sesion"></span>
+   </header>
+ 
+   <main>
+@@ -24,17 +25,29 @@
+       <form id="form-buscar" class="form-inline">
+         <label>
+           ID del barbero
+-          <input type="number" id="buscar-barbero-id" min="1" placeholder="Ej. 2">
++          <input type="number" id="buscar-barbero-id" min="1" placeholder="Ej. 3">
+         </label>
+         <button type="submit" class="btn">Buscar</button>
+         <button type="button" class="btn btn-secundario" id="btn-todas">Ver todas</button>
+       </form>
++      <!-- Resumen del barbero (GET /api/resenas/resumen?barberoId=, E3). -->
+       <p id="resumen-barbero" class="resumen" aria-live="polite"></p>
+       <p id="mensaje-lista" class="mensaje" aria-live="polite"></p>
+-      <ul id="lista-resenas" class="lista-resenas"></ul>
+-      <p class="nota">Cada reseña tiene sus botones <strong>Editar</strong> y <strong>Eliminar</strong> (E3). Solo el cliente de la cita puede usarlos: pon tu ID en el campo "Tu ID de cliente" de abajo, que se manda como X-Usuario-Id. Si no eres el cliente, el backend responde 403.</p>
++      <!-- E4: las reseñas se muestran en TABLA, no en lista. -->
++      <div class="tabla-scroll">
++        <table class="tabla">
++          <thead>
++            <tr><th>Cita</th><th>Calificación</th><th>Comentario</th><th>Fecha</th><th>Acciones</th></tr>
++          </thead>
++          <tbody id="cuerpo-resenas" aria-live="polite">
++            <tr><td colspan="5">Cargando reseñas…</td></tr>
++          </tbody>
++        </table>
++      </div>
++      <p class="nota">Cada reseña tiene sus botones <strong>Editar</strong> y <strong>Eliminar</strong>. Solo el cliente de la cita puede usarlos: si hay sesión guardada se manda su ID, si no, pon tu ID en el campo "Tu ID de cliente" de abajo (se manda como X-Usuario-Id). Si no eres el cliente, el backend responde 403 y aquí se muestra su mensaje.</p>
+     </section>
+ 
++    <!-- Formulario de edición, oculto hasta pulsar "Editar" en una reseña. -->
+     <section class="card" id="form-editar-resena" style="display: none;">
+       <h3>Editar reseña</h3>
+       <form id="form-editar" class="form">
+@@ -65,11 +78,11 @@
+       <form id="form-resena" class="form">
+         <label>
+           ID de la cita
+-          <input type="number" id="cita-id" min="1" required placeholder="Ej. 15">
++          <input type="number" id="cita-id" min="1" required placeholder="Ej. 1">
+         </label>
+         <label>
+-          Tu ID de cliente (opcional, se envía como X-Usuario-Id)
+-          <input type="number" id="usuario-id" min="1" placeholder="Ej. 4">
++          Tu ID de cliente (si no hay sesión guardada, se envía como X-Usuario-Id)
++          <input type="number" id="usuario-id" min="1" placeholder="Ej. 2">
+         </label>
+         <label>
+           Calificación (1 a 5)
+@@ -98,6 +111,7 @@
+ 
+   <script src="js/app.js"></script>
+   <script>
++    mostrarSesion();
+     document.getElementById('form-buscar').addEventListener('submit', buscarResenas);
+     document.getElementById('btn-todas').addEventListener('click', listarTodasResenas);
+     document.getElementById('form-resena').addEventListener('submit', enviarResena);

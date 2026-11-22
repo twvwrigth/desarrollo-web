@@ -107,10 +107,11 @@ async function cargarCortes(servicioId, nombreServicio) {
     const r = await apiFetch('/servicios/' + servicioId + '/cortes');
     if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
     if (!r.datos.length) {
-      cuerpo.innerHTML = '<tr><td colspan="2">Este servicio aún no tiene cortes.</td></tr>';
+      cuerpo.innerHTML = '<tr><td colspan="3">Este servicio aún no tiene cortes.</td></tr>';
     } else {
       cuerpo.innerHTML = r.datos.map(function (c) {
-        return '<tr><td>' + (c.nombre || 'Corte') + '</td><td>' + (c.descripcion || '') + '</td></tr>';
+        var imagen = c.imagenUrl ? '<img src="' + c.imagenUrl + '" alt="Imagen del corte" style="max-width: 80px;">' : '(sin imagen)';
+        return '<tr><td>' + (c.nombre || 'Corte') + '</td><td>' + (c.descripcion || '') + '</td><td>' + imagen + '</td></tr>';
       }).join('');
     }
     mostrarMensaje('mensaje-cortes', r.datos.length + ' corte(s).', false);

@@ -15,7 +15,14 @@
       <a href="index.html">Servicios</a>
       <a href="agendar.html" class="activo">Agendar cita</a>
       <a href="resenas.html">Reseñas</a>
+      <a href="servicios.html">Servicios</a>
+      <a href="cotizaciones.html">Cotizaciones</a>
+      <a href="login.html">Iniciar sesión</a>
+      <a href="registro.html">Registro</a>
+      <a href="usuarios.html">Usuarios</a>
+      <a href="horarios.html">Horarios</a>
     </nav>
+    <span id="sesion-info" class="sesion"></span>
   </header>
 
   <main>
@@ -27,8 +34,10 @@
         <input type="number" id="cliente-id" min="1" required placeholder="Ej. 4">
       </label>
       <label>
-        ID del barbero
-        <input type="number" id="barbero-id" min="1" required placeholder="Ej. 2">
+        Barbero
+        <select id="barbero-id" required>
+          <option value="">Cargando barberos…</option>
+        </select>
       </label>
       <label>
         Servicio
@@ -39,16 +48,18 @@
         </select>
       </label>
       <label>
-        ID del corte
-        <input type="number" id="corte-id" min="1" required placeholder="Ej. 1">
+        Corte
+        <select id="corte-id" required>
+          <option value="">Elige primero un servicio</option>
+        </select>
       </label>
       <label>
         Fecha y hora de inicio
         <input type="datetime-local" id="fecha-hora" required>
       </label>
       <label>
-        Fecha y hora de fin
-        <input type="datetime-local" id="fecha-hora-fin" required>
+        Fecha y hora de fin (se calcula sola según el servicio)
+        <input type="datetime-local" id="fecha-hora-fin" required readonly>
       </label>
       <label>
         Observaciones / notas
@@ -61,7 +72,7 @@
     <section class="card">
       <h3>Mis citas</h3>
       <form id="form-filtro-citas" class="form-inline">
-        <label>
+        <label id="campo-filtro-cliente-id">
           ID del cliente
           <input type="number" id="filtro-cliente-id" min="1" placeholder="Ej. 4">
         </label>
@@ -119,14 +130,146 @@
     </section>
 
   </main>
+
+  <footer>
+    <p>Proyecto desarrollo-web</p>
+  </footer>
   <script src="js/app.js"></script>
   <script src="js/citas.js"></script>
   <script>
+    // Funciones que pedía esta página y no existían. Por eso la consola
+    // marcaba "recalcularFinAgendar is not defined" y el script moría en
+    // esa línea: nada de lo que venía después se ejecutaba, ni cargar los
+    // barberos (por eso el select se quedaba en "Cargando barberos…") ni
+    // precargar el cliente ni cargar "Mis citas" sola con la sesión.
+    var DURACIONES_AGENDAR = {}; // id del servicio -> duracionMin
+
+    async function cargarBarberosParaAgendar() {
+      const sel = document.getElementById('barbero-id');
+      if (!sel) return;
+      try {
+        const r = await apiFetch('/usuarios?rol=BARBERO');
+        if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
+        if (!r.datos.length) {
+          sel.innerHTML = '<option value="">No hay barberos activos</option>';
+          return;
+        }
+        sel.innerHTML = '<option value="">Elige…</option>' + r.datos.map(function (b) {
+          return '<option value="' + b.id + '">' + (b.nombre || ('Barbero #' + b.id)) + '</option>';
+        }).join('');
+      } catch (e) {
+        sel.innerHTML = '<option value="">No se pudieron cargar los barberos</option>';
+      }
+    }
+
+    function precargarClienteId() {
+      const id = sesionUsuarioId();
+      if (!id) return;
+      const campo = document.getElementById('cliente-id');
+      if (campo) {
+        campo.value = id;
+        campo.readOnly = true;
+      }
+    }
+
+    async function cargarServiciosParaAgendar() {
+      try {
+        const r = await apiFetch('/servicios');
+        if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
+        const sel = document.getElementById('servicio-id');
+        if (r.datos.length && sel) {
+          sel.innerHTML = r.datos.map(function (s) {
+            return '<option value="' + s.id + '">' + (s.nombre || 'Servicio') + ' — ' + (s.duracionMin || 0) + ' min · $' + (s.precio != null ? s.precio : '?') + '</option>';
+          }).join('');
+        }
+        DURACIONES_AGENDAR = {};
+        (r.datos || []).forEach(function (s) { DURACIONES_AGENDAR[s.id] = s.duracionMin; });
+      } catch (e) {
+        // Sin conexión al backend: se quedan las 3 opciones fijas del HTML
+        // y la duración se saca del texto de la opción.
+      }
+    }
+
+    async function actualizarCortesAgendar() {
+      const selServicio = document.getElementById('servicio-id');
+      const selCorte = document.getElementById('corte-id');
+      if (!selCorte) return;
+      const servicioId = selServicio ? selServicio.value : '';
+      if (!servicioId) {
+        selCorte.innerHTML = '<option value="">Elige primero un servicio</option>';
+        return;
+      }
+      try {
+        const r = await apiFetch('/servicios/' + servicioId + '/cortes');
+        if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
+        if (!r.datos.length) {
+          selCorte.innerHTML = '<option value="">Este servicio aún no tiene cortes</option>';
+          return;
+        }
+        selCorte.innerHTML = '<option value="">Elige…</option>' + r.datos.map(function (c) {
+          return '<option value="' + c.id + '">' + (c.nombre || ('Corte #' + c.id)) + '</option>';
+        }).join('');
+      } catch (e) {
+        selCorte.innerHTML = '<option value="">No se pudieron cargar los cortes</option>';
+      }
+    }
+
+    function duracionAgendarSeleccionada() {
+      const sel = document.getElementById('servicio-id');
+      if (!sel || !sel.value) return null;
+      const id = Number(sel.value);
+      if (DURACIONES_AGENDAR[id]) return DURACIONES_AGENDAR[id];
+      const texto = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '';
+      const m = texto.match(/(\d+)\s*min/);
+      if (m) return Number(m[1]);
+      const fijos = { 1: 30, 2: 45, 3: 20 };
+      return fijos[id] || null;
+    }
+
+    function recalcularFinAgendar() {
+      const inicioEl = document.getElementById('fecha-hora');
+      const finEl = document.getElementById('fecha-hora-fin');
+      if (!inicioEl || !finEl || !inicioEl.value) return;
+      const duracion = duracionAgendarSeleccionada();
+      if (!duracion) return;
+      const inicio = new Date(inicioEl.value);
+      if (isNaN(inicio.getTime())) return;
+      const fin = new Date(inicio.getTime() + duracion * 60000);
+      const pad = function (n) { return String(n).padStart(2, '0'); };
+      finEl.value = fin.getFullYear() + '-' + pad(fin.getMonth() + 1) + '-' + pad(fin.getDate()) +
+        'T' + pad(fin.getHours()) + ':' + pad(fin.getMinutes());
+    }
+
+    mostrarSesion();
     document.getElementById('form-cita').addEventListener('submit', agendarCita);
     document.getElementById('form-filtro-citas').addEventListener('submit', function (e) {
       e.preventDefault();
       listarMisCitas();
     });
+    document.getElementById('servicio-id').addEventListener('change', function () {
+      actualizarCortesAgendar();
+      recalcularFinAgendar();
+    });
+    document.getElementById('fecha-hora').addEventListener('change', recalcularFinAgendar);
+
+    cargarBarberosParaAgendar();
+    precargarClienteId();
+    cargarServiciosParaAgendar().then(function () {
+      actualizarCortesAgendar();
+      recalcularFinAgendar();
+    });
+
+    // Si ya hay sesión, "Mis citas" se carga sola sin pedir el ID del cliente.
+    (function () {
+      var sesionId = sesionUsuarioId();
+      if (sesionId) {
+        var campoFiltro = document.getElementById('campo-filtro-cliente-id');
+        var inputFiltro = document.getElementById('filtro-cliente-id');
+        inputFiltro.value = sesionId;
+        campoFiltro.style.display = 'none';
+        listarMisCitas();
+      }
+    })();
     document.getElementById('form-reprogramar-cita').addEventListener('submit', guardarReprogramacion);
     document.getElementById('btn-cancelar-reprogramar').addEventListener('click', function () {
       document.getElementById('form-reprogramar').style.display = 'none';
