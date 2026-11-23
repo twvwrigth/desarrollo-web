@@ -1,0 +1,52 @@
+diff --git a/pruebas-curl-e3.sh b/pruebas-curl-e3.sh
+new file mode 100644
+index 0000000..d8d6c40
+--- /dev/null
++++ b/pruebas-curl-e3.sh
+@@ -0,0 +1,46 @@
++#!/usr/bin/env bash
++set -u
++BASE="${BASE:-http://localhost:8081/api}"
++TS=$(date +%s)
++fail=0
++check(){ desc="$1"; exp="$2"; got="$3"; if [ "$exp" = "$got" ]; then echo "OK   $desc ($got)"; else echo "FAIL $desc esperado=$exp obtenido=$got"; fail=1; fi; }
++
++# esperar app
++for i in $(seq 1 40); do curl -s -o /dev/null "$BASE/usuarios" && break; sleep 2; done
++
++ADMIN_JSON=$(curl -s -X POST $BASE/auth/login -H 'Content-Type: application/json' -d '{"email":"admin@barberia.com","password":"admin123"}')
++# El id del admin sale del login (no se asume que sea 1)
++ADMIN_ID="${ADMIN_ID:-$(echo "$ADMIN_JSON" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)}"
++ADMIN_ID="${ADMIN_ID:-1}"
++echo "admin=$ADMIN_ID"
++C=$(curl -s -X POST $BASE/usuarios -H 'Content-Type: application/json' -d "{\"nombre\":\"Ana $TS\",\"email\":\"ana$TS@correo.com\",\"password\":\"secreto123\",\"telefono\":\"2281234567\"}")
++CID=$(echo "$C" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
++B=$(curl -s -X POST $BASE/usuarios -H 'Content-Type: application/json' -H "X-Usuario-Id: $ADMIN_ID" -d "{\"nombre\":\"Barbero $TS\",\"email\":\"barbero$TS@correo.com\",\"password\":\"secreto123\",\"rol\":\"BARBERO\"}")
++BID=$(echo "$B" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
++echo "cliente=$CID barbero=$BID"
++
++F=$(curl -s "$BASE/usuarios?rol=BARBERO"); echo "$F" | grep -q "barbero$TS@correo.com" && echo "OK filtro BARBERO incluye barbero" || { echo "FAIL filtro BARBERO"; fail=1; }
++echo "$F" | grep -q "ana$TS@correo.com" && { echo "FAIL filtro incluye cliente"; fail=1; } || echo "OK filtro excluye cliente"
++check "rol invalido" 400 "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/usuarios?rol=XYZ")"
++
++P=$(curl -s -X PUT $BASE/usuarios/$CID -H 'Content-Type: application/json' -d '{"nombre":"Ana Editada","telefono":"2281111111"}')
++echo "$P" | grep -q "Ana Editada" && echo "OK PUT usuario" || { echo "FAIL PUT usuario: $P"; fail=1; }
++check "PUT email duplicado" 409 "$(curl -s -o /dev/null -w '%{http_code}' -X PUT $BASE/usuarios/$CID -H 'Content-Type: application/json' -d "{\"email\":\"barbero$TS@correo.com\"}")"
++check "PUT usuario 404" 404 "$(curl -s -o /dev/null -w '%{http_code}' -X PUT $BASE/usuarios/999999 -H 'Content-Type: application/json' -d '{"nombre":"Nadie"}')"
++
++H=$(curl -s -X POST $BASE/barberos/$BID/horarios -H 'Content-Type: application/json' -d '{"diaSemana":1,"horaInicio":"10:00","horaFin":"18:00"}')
++HID=$(echo "$H" | grep -o '"id":[0-9]*' | tail -1 | cut -d: -f2)
++echo "horario=$HID"
++HP=$(curl -s -X PUT $BASE/horarios/$HID -H 'Content-Type: application/json' -d '{"horaFin":"17:00"}')
++echo "$HP" | grep -q "17:00" && echo "OK PUT horario parcial" || { echo "FAIL PUT horario parcial: $HP"; fail=1; }
++curl -s -X POST $BASE/barberos/$BID/horarios -H 'Content-Type: application/json' -d '{"diaSemana":1,"horaInicio":"18:00","horaFin":"20:00"}' > /dev/null
++check "PUT horario traslape" 409 "$(curl -s -o /dev/null -w '%{http_code}' -X PUT $BASE/horarios/$HID -H 'Content-Type: application/json' -d '{"horaInicio":"17:30","horaFin":"19:00"}')"
++check "PUT horario 404" 404 "$(curl -s -o /dev/null -w '%{http_code}' -X PUT $BASE/horarios/999999 -H 'Content-Type: application/json' -d '{"horaFin":"21:00"}')"
++check "DELETE horario" 204 "$(curl -s -o /dev/null -w '%{http_code}' -X DELETE $BASE/horarios/$HID)"
++check "DELETE horario repetido" 404 "$(curl -s -o /dev/null -w '%{http_code}' -X DELETE $BASE/horarios/$HID)"
++check "DELETE usuario baja logica" 204 "$(curl -s -o /dev/null -w '%{http_code}' -X DELETE $BASE/usuarios/$CID)"
++check "GET usuario tras baja" 404 "$(curl -s -o /dev/null -w '%{http_code}' $BASE/usuarios/$CID)"
++FC=$(curl -s "$BASE/usuarios?rol=CLIENTE"); echo "$FC" | grep -q "ana$TS@correo.com" && { echo "FAIL filtro CLIENTE incluye baja: $FC"; fail=1; } || echo "OK filtro CLIENTE sin la baja"
++
++echo "RESULTADO_FINAL fail=$fail"
++exit $fail

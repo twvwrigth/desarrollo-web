@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+# Pruebas cURL E4-permisos - Jose Luis (permisos por rol: 401 sin sesion, 403 sin permiso)
+# Uso: bash pruebas-curl-permisos.sh
+# Requiere el backend corriendo en http://localhost:8081
+# Cada caso imprime OK o FAIL y al final RESULTADO_FINAL fail=0/1.
+# Se puede correr las veces que se quiera: los correos llevan marca de tiempo.
+set -u
+BASE="${BASE:-http://localhost:8081/api}"
+TS=$(date +%s)
+fail=0
+check(){ desc="$1"; exp="$2"; got="$3"; if [ "$exp" = "$got" ]; then echo "OK   $desc ($got)"; else echo "FAIL $desc esperado=$exp obtenido=$got"; fail=1; fi; }
+
+# esperar app
+for i in $(seq 1 40); do curl -s -o /dev/null "$BASE/usuarios" && break; sleep 2; done
+
+# Login admin (el id sale del login, no se asume que sea 1)
+ADMIN_JSON=$(curl -s -X POST $BASE/auth/login -H 'Content-Type: application/json' -d '{"email":"admin@barberia.com","password":"admin123"}')
+ADMIN_ID="${ADMIN_ID:-$(echo "$ADMIN_JSON" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)}"
+ADMIN_ID="${ADMIN_ID:-1}"
+echo "admin=$ADMIN_ID"
+
+# Usuarios de prueba: 2 clientes y 2 barberos (los crea el admin)
+C1=$(curl -s -X POST $BASE/usuarios -H 'Content-Type: application/json' -d "{\"nombre\":\"Cliente P1 $TS\",\"email\":\"p1cliente$TS@correo.com\",\"password\":\"secreto123\"}")
+CLI=$(echo "$C1" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+C2=$(curl -s -X POST $BASE/usuarios -H 'Content-Type: application/json' -d "{\"nombre\":\"Cliente P2 $TS\",\"email\":\"p2cliente$TS@correo.com\",\"password\":\"secreto123\"}")
+CLI2=$(echo "$C2" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+B1J=$(curl -s -X POST $BASE/usuarios -H 'Content-Type: application/json' -H "X-Usuario-Id: $ADMIN_ID" -d "{\"nombre\":\"Barbero P1 $TS\",\"email\":\"p1barbero$TS@correo.com\",\"password\":\"secreto123\",\"rol\":\"BARBERO\"}")
+B1=$(echo "$B1J" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+B2J=$(curl -s -X POST $BASE/usuarios -H 'Content-Type: application/json' -H "X-Usuario-Id: $ADMIN_ID" -d "{\"nombre\":\"Barbero P2 $TS\",\"email\":\"p2barbero$TS@correo.com\",\"password\":\"secreto123\",\"rol\":\"BARBERO\"}")
+B2=$(echo "$B2J" | grep -o '"id":[0-9]*' | head -1 | cut -d: -f2)
+echo "cliente=$CLI cliente2=$CLI2 barbero=$B1 barbero2=$B2"
+
+# --- Listado de usuarios: solo ADMIN (401 sin sesion, 403 otro rol) ---
+check "listar usuarios sin sesion" 401 "$(curl -s -o /dev/null -w '%{http_code}' $BASE/usuarios)"
+check "listar usuarios como CLIENTE" 403 "$(curl -s -o /dev/null -w '%{http_code}' $BASE/usuarios -H "X-Usuario-Id: $CLI")"
+check "listar usuarios como BARBERO" 403 "$(curl -s -o /dev/null -w '%{http_code}' $BASE/usuarios -H "X-Usuario-Id: $B1")"
+check "listar usuarios como ADMIN" 200 "$(curl -s -o /dev/null -w '%{http_code}' $BASE/usuarios -H "X-Usuario-Id: $ADMIN_ID")"
+# Excepcion: ?rol=BARBERO sigue abierto (lo usan horarios.html y agendar)
+check "listar barberos sin sesion" 200 "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/usuarios?rol=BARBERO")"
+
+# --- Ver un perfil: el propio o ADMIN ---
+check "ver perfil sin sesion" 401 "$(curl -s -o /dev/null -w '%{http_code}' $BASE/usuarios/$CLI)"
+check "ver perfil propio" 200 "$(curl -s -o /dev/null -w '%{http_code}' $BASE/usuarios/$CLI -H "X-Usuario-Id: $CLI")"
+check "ver perfil ajeno" 403 "$(curl -s -o /dev/null -w '%{http_code}' $BASE/usuarios/$CLI -H "X-Usuario-Id: $CLI2")"
+check "ver perfil como ADMIN" 200 "$(curl -s -o /dev/null -w '%{http_code}' $BASE/usuarios/$CLI -H "X-Usuario-Id: $ADMIN_ID")"
+
+# --- Editar un perfil: el propio o ADMIN ---
+check "editar perfil propio" 200 "$(curl -s -o /dev/null -w '%{http_code}' -X PUT $BASE/usuarios/$CLI -H 'Content-Type: application/json' -H "X-Usuario-Id: $CLI" -d '{"telefono":"2289999999"}')"
+check "editar perfil ajeno" 403 "$(curl -s -o /dev/null -w '%{http_code}' -X PUT $BASE/usuarios/$CLI -H 'Content-Type: application/json' -H "X-Usuario-Id: $CLI2" -d '{"telefono":"2288888888"}')"
+
+# --- Desactivar / reactivar: solo ADMIN ---
+check "DELETE usuario como CLIENTE" 403 "$(curl -s -o /dev/null -w '%{http_code}' -X DELETE $BASE/usuarios/$CLI2 -H "X-Usuario-Id: $CLI")"
+check "DELETE usuario como ADMIN" 204 "$(curl -s -o /dev/null -w '%{http_code}' -X DELETE $BASE/usuarios/$CLI2 -H "X-Usuario-Id: $ADMIN_ID")"
+check "/estado como CLIENTE" 403 "$(curl -s -o /dev/null -w '%{http_code}' -X PUT $BASE/usuarios/$CLI2/estado -H 'Content-Type: application/json' -H "X-Usuario-Id: $CLI" -d '{"activo":true}')"
+check "reactivar por /estado como ADMIN" 200 "$(curl -s -o /dev/null -w '%{http_code}' -X PUT $BASE/usuarios/$CLI2/estado -H 'Content-Type: application/json' -H "X-Usuario-Id: $ADMIN_ID" -d '{"activo":true}')"
+
+# --- Horarios: GET publico; crear/editar/eliminar solo ADMIN o barbero dueno ---
+check "listar horarios sin sesion" 200 "$(curl -s -o /dev/null -w '%{http_code}' $BASE/barberos/$B1/horarios)"
+check "crear horario sin sesion" 401 "$(curl -s -o /dev/null -w '%{http_code}' -X POST $BASE/barberos/$B1/horarios -H 'Content-Type: application/json' -d '{"diaSemana":1,"horaInicio":"09:00","horaFin":"13:00"}')"
+check "crear horario como CLIENTE" 403 "$(curl -s -o /dev/null -w '%{http_code}' -X POST $BASE/barberos/$B1/horarios -H 'Content-Type: application/json' -H "X-Usuario-Id: $CLI" -d '{"diaSemana":1,"horaInicio":"09:00","horaFin":"13:00"}')"
+check "crear horario de otro barbero" 403 "$(curl -s -o /dev/null -w '%{http_code}' -X POST $BASE/barberos/$B1/horarios -H 'Content-Type: application/json' -H "X-Usuario-Id: $B2" -d '{"diaSemana":1,"horaInicio":"09:00","horaFin":"13:00"}')"
+# Limpieza: borrar horarios previos de este barbero (es uno creado aqui mismo)
+for VIEJO in $(curl -s "$BASE/barberos/$B1/horarios" | grep -o '"id":[0-9]*' | cut -d: -f2); do curl -s -o /dev/null -X DELETE "$BASE/horarios/$VIEJO" -H "X-Usuario-Id: $ADMIN_ID"; done
+DIA=$(( (TS % 7) + 1 ))
+H=$(curl -s -X POST $BASE/barberos/$B1/horarios -H 'Content-Type: application/json' -H "X-Usuario-Id: $B1" -d "{\"diaSemana\":$DIA,\"horaInicio\":\"09:00\",\"horaFin\":\"13:00\"}")
+HID=$(echo "$H" | grep -o '"id":[0-9]*' | tail -1 | cut -d: -f2)
+echo "horario=$HID dia=$DIA"
+check "crear horario como dueno" 201 "$(curl -s -o /dev/null -w '%{http_code}' -X POST $BASE/barberos/$B1/horarios -H 'Content-Type: application/json' -H "X-Usuario-Id: $B1" -d "{\"diaSemana\":$(( (DIA % 7) + 1 )),\"horaInicio\":\"09:00\",\"horaFin\":\"13:00\"}")"
+check "editar horario como CLIENTE" 403 "$(curl -s -o /dev/null -w '%{http_code}' -X PUT $BASE/horarios/$HID -H 'Content-Type: application/json' -H "X-Usuario-Id: $CLI" -d '{"horaFin":"14:00"}')"
+check "editar horario de otro barbero" 403 "$(curl -s -o /dev/null -w '%{http_code}' -X PUT $BASE/horarios/$HID -H 'Content-Type: application/json' -H "X-Usuario-Id: $B2" -d '{"horaFin":"14:00"}')"
+check "editar horario como dueno" 200 "$(curl -s -o /dev/null -w '%{http_code}' -X PUT $BASE/horarios/$HID -H 'Content-Type: application/json' -H "X-Usuario-Id: $B1" -d '{"horaFin":"14:00"}')"
+check "eliminar horario como ADMIN" 204 "$(curl -s -o /dev/null -w '%{http_code}' -X DELETE $BASE/horarios/$HID -H "X-Usuario-Id: $ADMIN_ID")"
+
+echo "RESULTADO_FINAL fail=$fail"
+exit $fail
