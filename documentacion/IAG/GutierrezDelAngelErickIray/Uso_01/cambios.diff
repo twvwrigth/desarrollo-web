@@ -1,0 +1,2350 @@
+diff --git a/demo/.gitattributes b/demo/.gitattributes
+index 3b41682..0ac0d33 100644
+--- a/demo/.gitattributes
++++ b/demo/.gitattributes
+@@ -1,2 +1,2 @@
+-/mvnw text eol=lf
+-*.cmd text eol=crlf
++/mvnw text eol=lf
++*.cmd text eol=crlf
+diff --git a/demo/.gitignore b/demo/.gitignore
+index 667aaef..d3f8d6e 100644
+--- a/demo/.gitignore
++++ b/demo/.gitignore
+@@ -1,33 +1,33 @@
+-HELP.md
+-target/
+-.mvn/wrapper/maven-wrapper.jar
+-!**/src/main/**/target/
+-!**/src/test/**/target/
+-
+-### STS ###
+-.apt_generated
+-.classpath
+-.factorypath
+-.project
+-.settings
+-.springBeans
+-.sts4-cache
+-
+-### IntelliJ IDEA ###
+-.idea
+-*.iws
+-*.iml
+-*.ipr
+-
+-### NetBeans ###
+-/nbproject/private/
+-/nbbuild/
+-/dist/
+-/nbdist/
+-/.nb-gradle/
+-build/
+-!**/src/main/**/build/
+-!**/src/test/**/build/
+-
+-### VS Code ###
+-.vscode/
++HELP.md
++target/
++.mvn/wrapper/maven-wrapper.jar
++!**/src/main/**/target/
++!**/src/test/**/target/
++
++### STS ###
++.apt_generated
++.classpath
++.factorypath
++.project
++.settings
++.springBeans
++.sts4-cache
++
++### IntelliJ IDEA ###
++.idea
++*.iws
++*.iml
++*.ipr
++
++### NetBeans ###
++/nbproject/private/
++/nbbuild/
++/dist/
++/nbdist/
++/.nb-gradle/
++build/
++!**/src/main/**/build/
++!**/src/test/**/build/
++
++### VS Code ###
++.vscode/
+diff --git a/demo/.mvn/wrapper/maven-wrapper.properties b/demo/.mvn/wrapper/maven-wrapper.properties
+index bb58b3c..e5ba9bb 100644
+--- a/demo/.mvn/wrapper/maven-wrapper.properties
++++ b/demo/.mvn/wrapper/maven-wrapper.properties
+@@ -1,3 +1,3 @@
+-wrapperVersion=3.3.4
+-distributionType=only-script
+-distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.10.0/apache-maven-3.10.0-bin.zip
++wrapperVersion=3.3.4
++distributionType=only-script
++distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.10.0/apache-maven-3.10.0-bin.zip
+diff --git a/demo/pom.xml b/demo/pom.xml
+index 24a6d29..962b1d9 100644
+--- a/demo/pom.xml
++++ b/demo/pom.xml
+@@ -1,88 +1,88 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+-	<modelVersion>4.0.0</modelVersion>
+-	<parent>
+-		<groupId>org.springframework.boot</groupId>
+-		<artifactId>spring-boot-starter-parent</artifactId>
+-		<version>4.1.2</version>
+-		<relativePath/> <!-- lookup parent from repository -->
+-	</parent>
+-	<groupId>com.example</groupId>
+-	<artifactId>demo</artifactId>
+-	<version>0.0.1-SNAPSHOT</version>
+-	<name/>
+-	<description/>
+-	<url/>
+-	<licenses>
+-		<license/>
+-	</licenses>
+-	<developers>
+-		<developer/>
+-	</developers>
+-	<scm>
+-		<connection/>
+-		<developerConnection/>
+-		<tag/>
+-		<url/>
+-	</scm>
+-	<properties>
+-		<java.version>17</java.version>
+-	</properties>
+-	<dependencies>
+-		<dependency>
+-			<groupId>org.springframework.boot</groupId>
+-			<artifactId>spring-boot-starter-data-jpa</artifactId>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.springframework.boot</groupId>
+-			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.springframework.boot</groupId>
+-			<artifactId>spring-boot-starter-webmvc</artifactId>
+-		</dependency>
+-
+-		<dependency>
+-			<groupId>org.springframework.boot</groupId>
+-			<artifactId>spring-boot-devtools</artifactId>
+-			<scope>runtime</scope>
+-			<optional>true</optional>
+-		</dependency>
+-		<dependency>
+-			<groupId>com.mysql</groupId>
+-			<artifactId>mysql-connector-j</artifactId>
+-			<scope>runtime</scope>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.springframework.boot</groupId>
+-			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
+-			<scope>test</scope>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.springframework.boot</groupId>
+-			<artifactId>spring-boot-starter-thymeleaf-test</artifactId>
+-			<scope>test</scope>
+-		</dependency>
+-		<dependency>
+-			<groupId>org.springframework.boot</groupId>
+-			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+-			<scope>test</scope>
+-		</dependency>
+-		<!-- Solo el encoder BCrypt para la contrasena (RN-09), sin Spring Security completo -->
+-		<dependency>
+-			<groupId>org.springframework.security</groupId>
+-			<artifactId>spring-security-crypto</artifactId>
+-		</dependency>
+-	</dependencies>
+-
+-	<build>
+-		<plugins>
+-			<plugin>
+-				<groupId>org.springframework.boot</groupId>
+-				<artifactId>spring-boot-maven-plugin</artifactId>
+-			</plugin>
+-		</plugins>
+-	</build>
+-
+-</project>
++<?xml version="1.0" encoding="UTF-8"?>
++<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
++	<modelVersion>4.0.0</modelVersion>
++	<parent>
++		<groupId>org.springframework.boot</groupId>
++		<artifactId>spring-boot-starter-parent</artifactId>
++		<version>4.1.2</version>
++		<relativePath/> <!-- lookup parent from repository -->
++	</parent>
++	<groupId>com.example</groupId>
++	<artifactId>demo</artifactId>
++	<version>0.0.1-SNAPSHOT</version>
++	<name/>
++	<description/>
++	<url/>
++	<licenses>
++		<license/>
++	</licenses>
++	<developers>
++		<developer/>
++	</developers>
++	<scm>
++		<connection/>
++		<developerConnection/>
++		<tag/>
++		<url/>
++	</scm>
++	<properties>
++		<java.version>17</java.version>
++	</properties>
++	<dependencies>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-data-jpa</artifactId>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-thymeleaf</artifactId>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-webmvc</artifactId>
++		</dependency>
++
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-devtools</artifactId>
++			<scope>runtime</scope>
++			<optional>true</optional>
++		</dependency>
++		<dependency>
++			<groupId>com.mysql</groupId>
++			<artifactId>mysql-connector-j</artifactId>
++			<scope>runtime</scope>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
++			<scope>test</scope>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-thymeleaf-test</artifactId>
++			<scope>test</scope>
++		</dependency>
++		<dependency>
++			<groupId>org.springframework.boot</groupId>
++			<artifactId>spring-boot-starter-webmvc-test</artifactId>
++			<scope>test</scope>
++		</dependency>
++		<!-- Solo el encoder BCrypt para la contrasena (RN-09), sin Spring Security completo -->
++		<dependency>
++			<groupId>org.springframework.security</groupId>
++			<artifactId>spring-security-crypto</artifactId>
++		</dependency>
++	</dependencies>
++
++	<build>
++		<plugins>
++			<plugin>
++				<groupId>org.springframework.boot</groupId>
++				<artifactId>spring-boot-maven-plugin</artifactId>
++			</plugin>
++		</plugins>
++	</build>
++
++</project>
+diff --git a/demo/src/main/java/com/example/demo/Cita.java b/demo/src/main/java/com/example/demo/Cita.java
+new file mode 100644
+index 0000000..e3cbc95
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/Cita.java
+@@ -0,0 +1,140 @@
++package com.example.demo;
++
++import jakarta.persistence.Column;
++import jakarta.persistence.Entity;
++import jakarta.persistence.EnumType;
++import jakarta.persistence.Enumerated;
++import jakarta.persistence.GeneratedValue;
++import jakarta.persistence.GenerationType;
++import jakarta.persistence.Id;
++import jakarta.persistence.JoinColumn;
++import jakarta.persistence.ManyToOne;
++import jakarta.persistence.PrePersist;
++import jakarta.persistence.Table;
++
++import java.time.LocalDateTime;
++//Une cuatro cosas: un cliente, un barbero, un servicio y un corte. Los cuatro llegan al controlador como objetos con solo el id y ahí se reemplazan por las entidades completas antes de guardar
++
++@Entity
++@Table(name = "citas")
++public class Cita {
++
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    private Integer id;
++
++    @ManyToOne
++    @JoinColumn(name = "cliente_id")
++    private Usuario cliente;
++
++    @ManyToOne
++    @JoinColumn(name = "barbero_id")
++    private Usuario barbero;
++
++    @ManyToOne
++    @JoinColumn(name = "servicio_id")
++    private Servicio servicio;
++
++    @ManyToOne
++    @JoinColumn(name = "corte_id")
++    private Corte corte;
++
++    @Column(name = "fecha_hora_inicio")
++    private LocalDateTime fechaHoraInicio;
++
++    @Column(name = "fecha_hora_fin")
++    private LocalDateTime fechaHoraFin;
++
++    @Enumerated(EnumType.STRING)
++    private EstadoCita estado = EstadoCita.PENDIENTE;
++
++    private String notas;
++
++    @Column(name = "fecha_creacion")
++    private LocalDateTime fechaCreacion;
++
++    @PrePersist
++    public void alCrear() {
++        if (fechaCreacion == null) {
++            fechaCreacion = LocalDateTime.now();
++        }
++        if (estado == null) {
++            estado = EstadoCita.PENDIENTE;
++        }
++    }
++
++    public Cita() {
++    }
++
++    public Integer getId() {
++        return id;
++    }
++
++    public Usuario getCliente() {
++        return cliente;
++    }
++
++    public void setCliente(Usuario cliente) {
++        this.cliente = cliente;
++    }
++
++    public Usuario getBarbero() {
++        return barbero;
++    }
++
++    public void setBarbero(Usuario barbero) {
++        this.barbero = barbero;
++    }
++
++    public Servicio getServicio() {
++        return servicio;
++    }
++
++    public void setServicio(Servicio servicio) {
++        this.servicio = servicio;
++    }
++
++    public Corte getCorte() {
++        return corte;
++    }
++
++    public void setCorte(Corte corte) {
++        this.corte = corte;
++    }
++
++    public LocalDateTime getFechaHoraInicio() {
++        return fechaHoraInicio;
++    }
++
++    public void setFechaHoraInicio(LocalDateTime fechaHoraInicio) {
++        this.fechaHoraInicio = fechaHoraInicio;
++    }
++
++    public LocalDateTime getFechaHoraFin() {
++        return fechaHoraFin;
++    }
++
++    public void setFechaHoraFin(LocalDateTime fechaHoraFin) {
++        this.fechaHoraFin = fechaHoraFin;
++    }
++
++    public EstadoCita getEstado() {
++        return estado;
++    }
++
++    public void setEstado(EstadoCita estado) {
++        this.estado = estado;
++    }
++
++    public String getNotas() {
++        return notas;
++    }
++
++    public void setNotas(String notas) {
++        this.notas = notas;
++    }
++
++    public LocalDateTime getFechaCreacion() {
++        return fechaCreacion;
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/CitaControlador.java b/demo/src/main/java/com/example/demo/CitaControlador.java
+new file mode 100644
+index 0000000..af2ff7b
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/CitaControlador.java
+@@ -0,0 +1,148 @@
++package com.example.demo;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.CrossOrigin;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.PathVariable;
++import org.springframework.web.bind.annotation.PostMapping;
++import org.springframework.web.bind.annotation.RequestBody;
++import org.springframework.web.bind.annotation.RestController;
++
++import java.util.Map;
++import java.util.Optional;
++
++
++@CrossOrigin(origins = "*")
++@RestController
++public class CitaControlador {
++
++    @Autowired
++    ICita icita;
++
++    @Autowired
++    IUsuario iusuario;
++
++    @Autowired
++    IServicio iservicio;
++
++    @Autowired
++    ICorte icorte;
++
++    // La cita nueva siempre nace PENDIENTE
++    @PostMapping("/api/citas")
++    public ResponseEntity<?> crear(@RequestBody Cita cita) {
++        if (cita.getCliente() == null || cita.getCliente().getId() == null
++                || cita.getBarbero() == null || cita.getBarbero().getId() == null
++                || cita.getServicio() == null || cita.getServicio().getId() == null
++                || cita.getCorte() == null || cita.getCorte().getId() == null) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos",
++                            "mensaje", "cliente, barbero, servicio y corte son obligatorios"));
++        }
++
++        Optional<Usuario> cliente = iusuario.findById(cita.getCliente().getId());
++        if (cliente.isEmpty() || !cliente.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Cliente no encontrado"));
++        }
++        if (cliente.get().getRol() != Rol.CLIENTE) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "El cliente debe tener rol CLIENTE"));
++        }
++
++        Optional<Usuario> barbero = iusuario.findById(cita.getBarbero().getId());
++        if (barbero.isEmpty() || !barbero.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Barbero no encontrado"));
++        }
++        if (barbero.get().getRol() != Rol.BARBERO) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "El usuario no es un barbero"));
++        }
++
++        Optional<Servicio> servicio = iservicio.findById(cita.getServicio().getId());
++        if (servicio.isEmpty() || !servicio.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Servicio no encontrado o inactivo"));
++        }
++
++        Optional<Corte> corte = icorte.findById(cita.getCorte().getId());
++        if (corte.isEmpty() || !corte.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Corte no encontrado o inactivo"));
++        }
++        if (!corte.get().getServicio().getId().equals(servicio.get().getId())) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "El corte no pertenece a ese servicio"));
++        }
++
++        if (cita.getFechaHoraInicio() == null || cita.getFechaHoraFin() == null
++                || !cita.getFechaHoraFin().isAfter(cita.getFechaHoraInicio())) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos",
++                            "mensaje", "La fechaHoraFin debe ser mayor que la fechaHoraInicio"));
++        }
++
++        // No se puede reservar al mismo barbero dos veces en el mismo horario
++        // (igual que el traslape de horarios en HorarioControlador).
++        for (Cita existente : icita.findByBarberoId(barbero.get().getId())) {
++            if (existente.getEstado() == EstadoCita.CANCELADA) {
++                continue;
++            }
++            boolean traslapa = cita.getFechaHoraInicio().isBefore(existente.getFechaHoraFin())
++                    && cita.getFechaHoraFin().isAfter(existente.getFechaHoraInicio());
++            if (traslapa) {
++                return ResponseEntity.status(HttpStatus.CONFLICT)
++                        .body(Map.of("error", "Conflicto",
++                                "mensaje", "El barbero ya tiene una cita en ese horario"));
++            }
++        }
++
++        cita.setCliente(cliente.get());
++        cita.setBarbero(barbero.get());
++        cita.setServicio(servicio.get());
++        cita.setCorte(corte.get());
++        cita.setEstado(EstadoCita.PENDIENTE);
++        Cita guardada = icita.save(cita);
++        return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
++    }
++
++    // E2: GET /api/citas/{id} -> 200 / 404
++    @GetMapping("/api/citas/{id}")
++    public ResponseEntity<?> obtener(@PathVariable Integer id) {
++        Optional<Cita> cita = icita.findById(id);
++        if (cita.isEmpty()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Cita no encontrada"));
++        }
++        return ResponseEntity.ok(cita.get());
++    }
++
++    // E2: GET /api/clientes/{id}/citas -> 200 / 404
++    @GetMapping("/api/clientes/{id}/citas")
++    public ResponseEntity<?> listarPorCliente(@PathVariable Integer id) {
++        Optional<Usuario> cliente = iusuario.findById(id);
++        if (cliente.isEmpty() || !cliente.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Cliente no encontrado"));
++        }
++        return ResponseEntity.ok(icita.findByClienteId(id));
++    }
++
++    // E2: GET /api/barberos/{id}/citas -> 200 / 400 / 404
++    @GetMapping("/api/barberos/{id}/citas")
++    public ResponseEntity<?> listarPorBarbero(@PathVariable Integer id) {
++        Optional<Usuario> barbero = iusuario.findById(id);
++        if (barbero.isEmpty() || !barbero.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Barbero no encontrado"));
++        }
++        if (barbero.get().getRol() != Rol.BARBERO) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "El usuario no es un barbero"));
++        }
++        return ResponseEntity.ok(icita.findByBarberoId(id));
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/Configuracion.java b/demo/src/main/java/com/example/demo/Configuracion.java
+index 1bb104e..44bcc9c 100644
+--- a/demo/src/main/java/com/example/demo/Configuracion.java
++++ b/demo/src/main/java/com/example/demo/Configuracion.java
+@@ -1,39 +1,39 @@
+-package com.example.demo;
+-
+-import org.springframework.boot.CommandLineRunner;
+-import org.springframework.context.annotation.Bean;
+-import org.springframework.context.annotation.Configuration;
+-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+-import org.springframework.security.crypto.password.PasswordEncoder;
+-
+-// Configuracion simple, todo en el mismo paquete como en clase.
+-// Solo se usa el encoder BCrypt, NO se activa Spring Security completo
+-// (decision documentada en endpoints.md: frontend guarda el usuario en
+-// sessionStorage y manda el header X-Usuario-Id).
+-@Configuration
+-public class Configuracion {
+-
+-    @Bean
+-    public PasswordEncoder passwordEncoder() {
+-        return new BCryptPasswordEncoder();
+-    }
+-
+-    // Admin inicial solo para poder probar la creacion de barberos en el E2.
+-    // Credenciales de DEMO: admin@barberia.com / admin123 (cambiarla despues).
+-    @Bean
+-    public CommandLineRunner initAdmin(IUsuario iusuario, PasswordEncoder encoder) {
+-        return args -> {
+-            if (iusuario.findByEmail("admin@barberia.com").isEmpty()) {
+-                Usuario admin = new Usuario();
+-                admin.setNombre("Administrador");
+-                admin.setEmail("admin@barberia.com");
+-                admin.setPassword(encoder.encode("admin123"));
+-                admin.setTelefono("0000000000");
+-                admin.setRol(Rol.ADMIN);
+-                admin.setActivo(true);
+-                iusuario.save(admin);
+-                System.out.println("Admin inicial creado: admin@barberia.com / admin123 (solo demo)");
+-            }
+-        };
+-    }
+-}
++package com.example.demo;
++
++import org.springframework.boot.CommandLineRunner;
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
++import org.springframework.security.crypto.password.PasswordEncoder;
++
++// Configuracion simple, todo en el mismo paquete como en clase.
++// Solo se usa el encoder BCrypt, NO se activa Spring Security completo
++// (decision documentada en endpoints.md: frontend guarda el usuario en
++// sessionStorage y manda el header X-Usuario-Id).
++@Configuration
++public class Configuracion {
++
++    @Bean
++    public PasswordEncoder passwordEncoder() {
++        return new BCryptPasswordEncoder();
++    }
++
++    // Admin inicial solo para poder probar la creacion de barberos en el E2.
++    // Credenciales de DEMO: admin@barberia.com / admin123 (cambiarla despues).
++    @Bean
++    public CommandLineRunner initAdmin(IUsuario iusuario, PasswordEncoder encoder) {
++        return args -> {
++            if (iusuario.findByEmail("admin@barberia.com").isEmpty()) {
++                Usuario admin = new Usuario();
++                admin.setNombre("Administrador");
++                admin.setEmail("admin@barberia.com");
++                admin.setPassword(encoder.encode("admin123"));
++                admin.setTelefono("0000000000");
++                admin.setRol(Rol.ADMIN);
++                admin.setActivo(true);
++                iusuario.save(admin);
++                System.out.println("Admin inicial creado: admin@barberia.com / admin123 (solo demo)");
++            }
++        };
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/Corte.java b/demo/src/main/java/com/example/demo/Corte.java
+new file mode 100644
+index 0000000..699e8a5
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/Corte.java
+@@ -0,0 +1,96 @@
++package com.example.demo;
++
++import jakarta.persistence.Column;
++import jakarta.persistence.Entity;
++import jakarta.persistence.GeneratedValue;
++import jakarta.persistence.GenerationType;
++import jakarta.persistence.Id;
++import jakarta.persistence.JoinColumn;
++import jakarta.persistence.ManyToOne;
++import jakarta.persistence.Table;
++
++@Entity
++@Table(name = "cortes")
++//Cada corte pertenece a un servicio: el servicio agrupa cortes
++public class Corte {
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    private Integer id;
++
++    private String nombre;
++
++    private String descripcion;
++
++    @Column(name = "imagen_url")
++    private String imagenUrl;
++
++    @Column(name = "overlay_url")
++    private String overlayUrl;
++
++    @ManyToOne
++    @JoinColumn(name = "servicio_id")
++    private Servicio servicio;
++
++    private boolean activo = true;
++
++    public Corte() {
++    }
++
++    public Corte(String nombre, String descripcion, Servicio servicio) {
++        this.nombre = nombre;
++        this.descripcion = descripcion;
++        this.servicio = servicio;
++    }
++
++    public Integer getId() {
++        return id;
++    }
++
++    public String getNombre() {
++        return nombre;
++    }
++
++    public void setNombre(String nombre) {
++        this.nombre = nombre;
++    }
++
++    public String getDescripcion() {
++        return descripcion;
++    }
++
++    public void setDescripcion(String descripcion) {
++        this.descripcion = descripcion;
++    }
++
++    public String getImagenUrl() {
++        return imagenUrl;
++    }
++
++    public void setImagenUrl(String imagenUrl) {
++        this.imagenUrl = imagenUrl;
++    }
++
++    public String getOverlayUrl() {
++        return overlayUrl;
++    }
++
++    public void setOverlayUrl(String overlayUrl) {
++        this.overlayUrl = overlayUrl;
++    }
++
++    public Servicio getServicio() {
++        return servicio;
++    }
++
++    public void setServicio(Servicio servicio) {
++        this.servicio = servicio;
++    }
++
++    public boolean isActivo() {
++        return activo;
++    }
++
++    public void setActivo(boolean activo) {
++        this.activo = activo;
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/CorteControlador.java b/demo/src/main/java/com/example/demo/CorteControlador.java
+new file mode 100644
+index 0000000..a606f2d
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/CorteControlador.java
+@@ -0,0 +1,94 @@
++package com.example.demo;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.CrossOrigin;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.PathVariable;
++import org.springframework.web.bind.annotation.PostMapping;
++import org.springframework.web.bind.annotation.RequestBody;
++import org.springframework.web.bind.annotation.RequestHeader;
++import org.springframework.web.bind.annotation.RestController;
++
++import java.util.Map;
++import java.util.Optional;
++
++//crear un corte es solo para ADMIN. El corte siempre pertenece a un servicio
++@CrossOrigin(origins = "*")
++@RestController
++public class CorteControlador {
++
++    @Autowired
++    ICorte icorte;
++
++    @Autowired
++    IServicio iservicio;
++
++    @Autowired
++    IUsuario iusuario;
++
++    private boolean esAdmin(Integer adminId) {
++        if (adminId == null) {
++            return false;
++        }
++        Optional<Usuario> admin = iusuario.findById(adminId);
++        return admin.isPresent() && admin.get().isActivo() && admin.get().getRol() == Rol.ADMIN;
++    }
++
++    // E2: POST /api/cortes -> 201 / 400 / 403 / 404
++    @PostMapping("/api/cortes")
++    public ResponseEntity<?> crear(@RequestBody Corte corte,
++                                   @RequestHeader(value = "X-Usuario-Id", required = false) Integer adminId) {
++        if (!esAdmin(adminId)) {
++            return ResponseEntity.status(HttpStatus.FORBIDDEN)
++                    .body(Map.of("error", "Sin permiso", "mensaje", "Solo un administrador puede crear cortes"));
++        }
++        if (corte.getNombre() == null || corte.getNombre().isBlank()
++                || corte.getServicio() == null || corte.getServicio().getId() == null) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "nombre y servicio son obligatorios"));
++        }
++        Optional<Servicio> servicio = iservicio.findById(corte.getServicio().getId());
++        if (servicio.isEmpty()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Servicio no encontrado"));
++        }
++        if (!servicio.get().isActivo()) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "El servicio no esta activo"));
++        }
++        corte.setServicio(servicio.get());
++        corte.setActivo(true);
++        Corte guardado = icorte.save(corte);
++        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
++    }
++
++    // E2: GET /api/cortes -> 200 (solo activos)
++    @GetMapping("/api/cortes")
++    public ResponseEntity<?> listar() {
++        return ResponseEntity.ok(icorte.findByActivoTrue());
++    }
++
++    // E2: GET /api/cortes/{id} -> 200 / 404
++    @GetMapping("/api/cortes/{id}")
++    public ResponseEntity<?> obtener(@PathVariable Integer id) {
++        Optional<Corte> corte = icorte.findById(id);
++        if (corte.isEmpty() || !corte.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Corte no encontrado"));
++        }
++        return ResponseEntity.ok(corte.get());
++    }
++
++    // E2: GET /api/servicios/{id}/cortes -> 200 / 404
++    @GetMapping("/api/servicios/{id}/cortes")
++    public ResponseEntity<?> listarPorServicio(@PathVariable Integer id) {
++        Optional<Servicio> servicio = iservicio.findById(id);
++        if (servicio.isEmpty() || !servicio.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Servicio no encontrado"));
++        }
++        return ResponseEntity.ok(icorte.findByServicioIdAndActivoTrue(id));
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/Cotizacion.java b/demo/src/main/java/com/example/demo/Cotizacion.java
+new file mode 100644
+index 0000000..b739a37
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/Cotizacion.java
+@@ -0,0 +1,103 @@
++package com.example.demo;
++
++import jakarta.persistence.CascadeType;
++import jakarta.persistence.Column;
++import jakarta.persistence.Entity;
++import jakarta.persistence.EnumType;
++import jakarta.persistence.Enumerated;
++import jakarta.persistence.GeneratedValue;
++import jakarta.persistence.GenerationType;
++import jakarta.persistence.Id;
++import jakarta.persistence.JoinColumn;
++import jakarta.persistence.ManyToOne;
++import jakarta.persistence.OneToMany;
++import jakarta.persistence.PrePersist;
++import jakarta.persistence.Table;
++
++import java.math.BigDecimal;
++import java.time.LocalDateTime;
++import java.util.ArrayList;
++import java.util.List;
++
++// El total lo calcula el servidor sumando el detalle
++@Entity
++@Table(name = "cotizaciones")
++public class Cotizacion {
++
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    private Integer id;
++
++    @ManyToOne
++    @JoinColumn(name = "cliente_id")
++    private Usuario cliente;
++
++    private LocalDateTime fecha;
++
++    private BigDecimal total;
++
++    @Enumerated(EnumType.STRING)
++    private EstadoCotizacion estado = EstadoCotizacion.PENDIENTE;
++
++    //La llave foránea cotizacion_id vive en la tabla del detalle
++    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
++    @JoinColumn(name = "cotizacion_id")
++    private List<CotizacionDetalle> detalle = new ArrayList<>();
++
++    @PrePersist
++    public void alCrear() {
++        if (fecha == null) {
++            fecha = LocalDateTime.now();
++        }
++        if (estado == null) {
++            estado = EstadoCotizacion.PENDIENTE;
++        }
++    }
++
++    public Cotizacion() {
++    }
++
++    public Integer getId() {
++        return id;
++    }
++
++    public Usuario getCliente() {
++        return cliente;
++    }
++
++    public void setCliente(Usuario cliente) {
++        this.cliente = cliente;
++    }
++
++    public LocalDateTime getFecha() {
++        return fecha;
++    }
++
++    public void setFecha(LocalDateTime fecha) {
++        this.fecha = fecha;
++    }
++
++    public BigDecimal getTotal() {
++        return total;
++    }
++
++    public void setTotal(BigDecimal total) {
++        this.total = total;
++    }
++
++    public EstadoCotizacion getEstado() {
++        return estado;
++    }
++
++    public void setEstado(EstadoCotizacion estado) {
++        this.estado = estado;
++    }
++
++    public List<CotizacionDetalle> getDetalle() {
++        return detalle;
++    }
++
++    public void setDetalle(List<CotizacionDetalle> detalle) {
++        this.detalle = detalle;
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/CotizacionControlador.java b/demo/src/main/java/com/example/demo/CotizacionControlador.java
+new file mode 100644
+index 0000000..27e9e05
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/CotizacionControlador.java
+@@ -0,0 +1,119 @@
++package com.example.demo;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.CrossOrigin;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.PathVariable;
++import org.springframework.web.bind.annotation.PostMapping;
++import org.springframework.web.bind.annotation.RequestBody;
++import org.springframework.web.bind.annotation.RestController;
++
++import java.math.BigDecimal;
++import java.util.Map;
++import java.util.Optional;
++
++// Controlador E2 de Erick, al estilo de los controladores en clase.
++// La cotización llega con el cliente y su detalle, por ejemplo:
++// {"cliente": {"id": 1}, "detalle": [
++//   {"servicio": {"id": 1}, "cantidad": 1},
++//   {"servicio": {"id": 2}, "cantidad": 2, "precioUnitario": 80.00}]}
++// Si un renglón no trae precioUnitario se usa el precio del servicio.
++// El total lo calcula el servidor; lo que mande el cliente en "total"
++// se ignora y se sobrescribe.
++@CrossOrigin(origins = "*")
++@RestController
++public class CotizacionControlador {
++
++    @Autowired
++    ICotizacion icotizacion;
++
++    @Autowired
++    IUsuario iusuario;
++
++    @Autowired
++    IServicio iservicio;
++
++    // E2: POST /api/cotizaciones -> 201 / 400 / 404
++    @PostMapping("/api/cotizaciones")
++    public ResponseEntity<?> crear(@RequestBody Cotizacion cotizacion) {
++        if (cotizacion.getCliente() == null || cotizacion.getCliente().getId() == null) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "cliente es obligatorio"));
++        }
++        Optional<Usuario> cliente = iusuario.findById(cotizacion.getCliente().getId());
++        if (cliente.isEmpty() || !cliente.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Cliente no encontrado"));
++        }
++        if (cliente.get().getRol() != Rol.CLIENTE) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "El cliente debe tener rol CLIENTE"));
++        }
++        if (cotizacion.getDetalle() == null || cotizacion.getDetalle().isEmpty()) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "La cotizacion necesita al menos un servicio en el detalle"));
++        }
++
++        BigDecimal total = BigDecimal.ZERO;
++        for (CotizacionDetalle renglon : cotizacion.getDetalle()) {
++            if (renglon.getServicio() == null || renglon.getServicio().getId() == null) {
++                return ResponseEntity.badRequest()
++                        .body(Map.of("error", "Datos invalidos", "mensaje", "Cada renglon necesita un servicio"));
++            }
++            Optional<Servicio> servicio = iservicio.findById(renglon.getServicio().getId());
++            if (servicio.isEmpty() || !servicio.get().isActivo()) {
++                return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                        .body(Map.of("error", "No encontrado", "mensaje", "Servicio no encontrado o inactivo"));
++            }
++            if (renglon.getCantidad() <= 0) {
++                return ResponseEntity.badRequest()
++                        .body(Map.of("error", "Datos invalidos", "mensaje", "La cantidad debe ser mayor que 0"));
++            }
++            if (renglon.getPrecioUnitario() == null) {
++                renglon.setPrecioUnitario(servicio.get().getPrecio());
++            }
++            if (renglon.getPrecioUnitario().compareTo(BigDecimal.ZERO) < 0) {
++                return ResponseEntity.badRequest()
++                        .body(Map.of("error", "Datos invalidos", "mensaje", "precioUnitario no puede ser negativo"));
++            }
++            // Se fija el servicio gestionado en el renglón. La llave foránea
++            // cotizacion_id la pone Hibernate sola al guardar la cotización,
++            // porque el @OneToMany de Cotizacion lleva
++            // @JoinColumn(name = "cotizacion_id"): el renglón no tiene campo
++            // "cotizacion", así que tampoco hay ciclo al convertir a JSON.
++            renglon.setServicio(servicio.get());
++            total = total.add(renglon.getPrecioUnitario()
++                    .multiply(BigDecimal.valueOf(renglon.getCantidad())));
++        }
++
++        cotizacion.setCliente(cliente.get());
++        cotizacion.setTotal(total);
++        cotizacion.setEstado(EstadoCotizacion.PENDIENTE);
++        Cotizacion guardada = icotizacion.save(cotizacion);
++        return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
++    }
++
++    // E2: GET /api/cotizaciones/{id} -> 200 / 404
++    @GetMapping("/api/cotizaciones/{id}")
++    public ResponseEntity<?> obtener(@PathVariable Integer id) {
++        Optional<Cotizacion> cotizacion = icotizacion.findById(id);
++        if (cotizacion.isEmpty()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Cotizacion no encontrada"));
++        }
++        return ResponseEntity.ok(cotizacion.get());
++    }
++
++    // E2: GET /api/clientes/{id}/cotizaciones -> 200 / 404
++    @GetMapping("/api/clientes/{id}/cotizaciones")
++    public ResponseEntity<?> listarPorCliente(@PathVariable Integer id) {
++        Optional<Usuario> cliente = iusuario.findById(id);
++        if (cliente.isEmpty() || !cliente.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Cliente no encontrado"));
++        }
++        return ResponseEntity.ok(icotizacion.findByClienteId(id));
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/CotizacionDetalle.java b/demo/src/main/java/com/example/demo/CotizacionDetalle.java
+new file mode 100644
+index 0000000..dbdf8ed
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/CotizacionDetalle.java
+@@ -0,0 +1,61 @@
++package com.example.demo;
++
++import jakarta.persistence.Column;
++import jakarta.persistence.Entity;
++import jakarta.persistence.GeneratedValue;
++import jakarta.persistence.GenerationType;
++import jakarta.persistence.Id;
++import jakarta.persistence.JoinColumn;
++import jakarta.persistence.ManyToOne;
++import jakarta.persistence.Table;
++
++import java.math.BigDecimal;
++// Cada renglón es un servicio cotizado con su cantidad y precio unitario.
++@Entity
++@Table(name = "cotizacion_detalle")
++public class CotizacionDetalle {
++
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    private Integer id;
++
++    @ManyToOne
++    @JoinColumn(name = "servicio_id")
++    private Servicio servicio;
++
++    private int cantidad;
++
++    @Column(name = "precio_unitario")
++    private BigDecimal precioUnitario;
++
++    public CotizacionDetalle() {
++    }
++
++    public Integer getId() {
++        return id;
++    }
++
++    public Servicio getServicio() {
++        return servicio;
++    }
++
++    public void setServicio(Servicio servicio) {
++        this.servicio = servicio;
++    }
++
++    public int getCantidad() {
++        return cantidad;
++    }
++
++    public void setCantidad(int cantidad) {
++        this.cantidad = cantidad;
++    }
++
++    public BigDecimal getPrecioUnitario() {
++        return precioUnitario;
++    }
++
++    public void setPrecioUnitario(BigDecimal precioUnitario) {
++        this.precioUnitario = precioUnitario;
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/DemoApplication.java b/demo/src/main/java/com/example/demo/DemoApplication.java
+index 64b538a..dcf9216 100644
+--- a/demo/src/main/java/com/example/demo/DemoApplication.java
++++ b/demo/src/main/java/com/example/demo/DemoApplication.java
+@@ -1,13 +1,13 @@
+-package com.example.demo;
+-
+-import org.springframework.boot.SpringApplication;
+-import org.springframework.boot.autoconfigure.SpringBootApplication;
+-
+-@SpringBootApplication
+-public class DemoApplication {
+-
+-	public static void main(String[] args) {
+-		SpringApplication.run(DemoApplication.class, args);
+-	}
+-
+-}
++package com.example.demo;
++
++import org.springframework.boot.SpringApplication;
++import org.springframework.boot.autoconfigure.SpringBootApplication;
++
++@SpringBootApplication
++public class DemoApplication {
++
++	public static void main(String[] args) {
++		SpringApplication.run(DemoApplication.class, args);
++	}
++
++}
+diff --git a/demo/src/main/java/com/example/demo/EstadoCita.java b/demo/src/main/java/com/example/demo/EstadoCita.java
+new file mode 100644
+index 0000000..778849d
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/EstadoCita.java
+@@ -0,0 +1,9 @@
++package com.example.demo;
++
++// Estados de citas
++public enum EstadoCita {
++    PENDIENTE,
++    CONFIRMADA,
++    COMPLETADA,
++    CANCELADA
++}
+diff --git a/demo/src/main/java/com/example/demo/EstadoCotizacion.java b/demo/src/main/java/com/example/demo/EstadoCotizacion.java
+new file mode 100644
+index 0000000..55c2be0
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/EstadoCotizacion.java
+@@ -0,0 +1,8 @@
++package com.example.demo;
++
++// Estados de cotizaciones
++public enum EstadoCotizacion {
++    PENDIENTE,
++    ACEPTADA,
++    RECHAZADA
++}
+diff --git a/demo/src/main/java/com/example/demo/HorarioBarbero.java b/demo/src/main/java/com/example/demo/HorarioBarbero.java
+index 259ae93..6a65151 100644
+--- a/demo/src/main/java/com/example/demo/HorarioBarbero.java
++++ b/demo/src/main/java/com/example/demo/HorarioBarbero.java
+@@ -1,78 +1,78 @@
+-package com.example.demo;
+-
+-import jakarta.persistence.Column;
+-import jakarta.persistence.Entity;
+-import jakarta.persistence.GeneratedValue;
+-import jakarta.persistence.GenerationType;
+-import jakarta.persistence.Id;
+-import jakarta.persistence.JoinColumn;
+-import jakarta.persistence.ManyToOne;
+-
+-import java.time.LocalTime;
+-
+-// Entidad del diagrama ER (tabla horarios_barbero). diaSemana: 1=lunes ... 7=domingo
+-@Entity
+-public class HorarioBarbero {
+-
+-    @Id
+-    @GeneratedValue(strategy = GenerationType.AUTO)
+-    private Integer id;
+-
+-    @ManyToOne
+-    @JoinColumn(name = "barbero_id")
+-    private Usuario barbero;
+-
+-    @Column(name = "dia_semana")
+-    private int diaSemana;
+-
+-    @Column(name = "hora_inicio")
+-    private LocalTime horaInicio;
+-
+-    @Column(name = "hora_fin")
+-    private LocalTime horaFin;
+-
+-    public HorarioBarbero() {
+-    }
+-
+-    public HorarioBarbero(int diaSemana, LocalTime horaInicio, LocalTime horaFin) {
+-        this.diaSemana = diaSemana;
+-        this.horaInicio = horaInicio;
+-        this.horaFin = horaFin;
+-    }
+-
+-    public Integer getId() {
+-        return id;
+-    }
+-
+-    public Usuario getBarbero() {
+-        return barbero;
+-    }
+-
+-    public void setBarbero(Usuario barbero) {
+-        this.barbero = barbero;
+-    }
+-
+-    public int getDiaSemana() {
+-        return diaSemana;
+-    }
+-
+-    public void setDiaSemana(int diaSemana) {
+-        this.diaSemana = diaSemana;
+-    }
+-
+-    public LocalTime getHoraInicio() {
+-        return horaInicio;
+-    }
+-
+-    public void setHoraInicio(LocalTime horaInicio) {
+-        this.horaInicio = horaInicio;
+-    }
+-
+-    public LocalTime getHoraFin() {
+-        return horaFin;
+-    }
+-
+-    public void setHoraFin(LocalTime horaFin) {
+-        this.horaFin = horaFin;
+-    }
+-}
++package com.example.demo;
++
++import jakarta.persistence.Column;
++import jakarta.persistence.Entity;
++import jakarta.persistence.GeneratedValue;
++import jakarta.persistence.GenerationType;
++import jakarta.persistence.Id;
++import jakarta.persistence.JoinColumn;
++import jakarta.persistence.ManyToOne;
++
++import java.time.LocalTime;
++
++// Entidad del diagrama ER (tabla horarios_barbero). diaSemana: 1=lunes ... 7=domingo
++@Entity
++public class HorarioBarbero {
++
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    private Integer id;
++
++    @ManyToOne
++    @JoinColumn(name = "barbero_id")
++    private Usuario barbero;
++
++    @Column(name = "dia_semana")
++    private int diaSemana;
++
++    @Column(name = "hora_inicio")
++    private LocalTime horaInicio;
++
++    @Column(name = "hora_fin")
++    private LocalTime horaFin;
++
++    public HorarioBarbero() {
++    }
++
++    public HorarioBarbero(int diaSemana, LocalTime horaInicio, LocalTime horaFin) {
++        this.diaSemana = diaSemana;
++        this.horaInicio = horaInicio;
++        this.horaFin = horaFin;
++    }
++
++    public Integer getId() {
++        return id;
++    }
++
++    public Usuario getBarbero() {
++        return barbero;
++    }
++
++    public void setBarbero(Usuario barbero) {
++        this.barbero = barbero;
++    }
++
++    public int getDiaSemana() {
++        return diaSemana;
++    }
++
++    public void setDiaSemana(int diaSemana) {
++        this.diaSemana = diaSemana;
++    }
++
++    public LocalTime getHoraInicio() {
++        return horaInicio;
++    }
++
++    public void setHoraInicio(LocalTime horaInicio) {
++        this.horaInicio = horaInicio;
++    }
++
++    public LocalTime getHoraFin() {
++        return horaFin;
++    }
++
++    public void setHoraFin(LocalTime horaFin) {
++        this.horaFin = horaFin;
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/HorarioControlador.java b/demo/src/main/java/com/example/demo/HorarioControlador.java
+index 6ff8959..44eeb6b 100644
+--- a/demo/src/main/java/com/example/demo/HorarioControlador.java
++++ b/demo/src/main/java/com/example/demo/HorarioControlador.java
+@@ -1,77 +1,77 @@
+-package com.example.demo;
+-
+-import org.springframework.beans.factory.annotation.Autowired;
+-import org.springframework.http.HttpStatus;
+-import org.springframework.http.ResponseEntity;
+-import org.springframework.web.bind.annotation.CrossOrigin;
+-import org.springframework.web.bind.annotation.GetMapping;
+-import org.springframework.web.bind.annotation.PathVariable;
+-import org.springframework.web.bind.annotation.PostMapping;
+-import org.springframework.web.bind.annotation.RequestBody;
+-import org.springframework.web.bind.annotation.RestController;
+-
+-import java.util.Map;
+-import java.util.Optional;
+-
+-@CrossOrigin(origins = "*")
+-@RestController
+-public class HorarioControlador {
+-
+-    @Autowired
+-    IHorarioBarbero ihorario;
+-
+-    @Autowired
+-    IUsuario iusuario;
+-
+-    // E2: GET /api/barberos/{id}/horarios -> 200 / 404
+-    @GetMapping("/api/barberos/{barberoId}/horarios")
+-    public ResponseEntity<?> listar(@PathVariable Integer barberoId) {
+-        Optional<Usuario> barbero = iusuario.findById(barberoId);
+-        if (barbero.isEmpty() || !barbero.get().isActivo()) {
+-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+-                    .body(Map.of("error", "No encontrado", "mensaje", "Barbero no encontrado"));
+-        }
+-        if (barbero.get().getRol() != Rol.BARBERO) {
+-            return ResponseEntity.badRequest()
+-                    .body(Map.of("error", "Datos invalidos", "mensaje", "El usuario no es un barbero"));
+-        }
+-        return ResponseEntity.ok(ihorario.findByBarberoId(barberoId));
+-    }
+-
+-    // E2: POST /api/barberos/{id}/horarios -> 201 / 400 / 404 / 409
+-    @PostMapping("/api/barberos/{barberoId}/horarios")
+-    public ResponseEntity<?> agregar(@PathVariable Integer barberoId, @RequestBody HorarioBarbero horario) {
+-        Optional<Usuario> barbero = iusuario.findById(barberoId);
+-        if (barbero.isEmpty() || !barbero.get().isActivo()) {
+-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+-                    .body(Map.of("error", "No encontrado", "mensaje", "Barbero no encontrado"));
+-        }
+-        if (barbero.get().getRol() != Rol.BARBERO) {
+-            return ResponseEntity.badRequest()
+-                    .body(Map.of("error", "Datos invalidos", "mensaje", "El usuario no es un barbero"));
+-        }
+-        if (horario.getDiaSemana() < 1 || horario.getDiaSemana() > 7) {
+-            return ResponseEntity.badRequest()
+-                    .body(Map.of("error", "Datos invalidos", "mensaje", "diaSemana debe ser 1 (lunes) a 7 (domingo)"));
+-        }
+-        if (horario.getHoraInicio() == null || horario.getHoraFin() == null
+-                || !horario.getHoraFin().isAfter(horario.getHoraInicio())) {
+-            return ResponseEntity.badRequest()
+-                    .body(Map.of("error", "Datos invalidos", "mensaje", "La horaFin debe ser mayor que la horaInicio"));
+-        }
+-
+-        // Evita bloques traslapados el mismo dia para el mismo barbero
+-        for (HorarioBarbero existente : ihorario.findByBarberoIdAndDiaSemana(barberoId, horario.getDiaSemana())) {
+-            boolean traslapa = horario.getHoraInicio().isBefore(existente.getHoraFin())
+-                    && horario.getHoraFin().isAfter(existente.getHoraInicio());
+-            if (traslapa) {
+-                return ResponseEntity.status(HttpStatus.CONFLICT)
+-                        .body(Map.of("error", "Conflicto", "mensaje", "El horario se traslapa con un bloque existente ese dia"));
+-            }
+-        }
+-
+-        horario.setBarbero(barbero.get());
+-        HorarioBarbero guardado = ihorario.save(horario);
+-        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
+-    }
+-}
++package com.example.demo;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.CrossOrigin;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.PathVariable;
++import org.springframework.web.bind.annotation.PostMapping;
++import org.springframework.web.bind.annotation.RequestBody;
++import org.springframework.web.bind.annotation.RestController;
++
++import java.util.Map;
++import java.util.Optional;
++
++@CrossOrigin(origins = "*")
++@RestController
++public class HorarioControlador {
++
++    @Autowired
++    IHorarioBarbero ihorario;
++
++    @Autowired
++    IUsuario iusuario;
++
++    // E2: GET /api/barberos/{id}/horarios -> 200 / 404
++    @GetMapping("/api/barberos/{barberoId}/horarios")
++    public ResponseEntity<?> listar(@PathVariable Integer barberoId) {
++        Optional<Usuario> barbero = iusuario.findById(barberoId);
++        if (barbero.isEmpty() || !barbero.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Barbero no encontrado"));
++        }
++        if (barbero.get().getRol() != Rol.BARBERO) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "El usuario no es un barbero"));
++        }
++        return ResponseEntity.ok(ihorario.findByBarberoId(barberoId));
++    }
++
++    // E2: POST /api/barberos/{id}/horarios -> 201 / 400 / 404 / 409
++    @PostMapping("/api/barberos/{barberoId}/horarios")
++    public ResponseEntity<?> agregar(@PathVariable Integer barberoId, @RequestBody HorarioBarbero horario) {
++        Optional<Usuario> barbero = iusuario.findById(barberoId);
++        if (barbero.isEmpty() || !barbero.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Barbero no encontrado"));
++        }
++        if (barbero.get().getRol() != Rol.BARBERO) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "El usuario no es un barbero"));
++        }
++        if (horario.getDiaSemana() < 1 || horario.getDiaSemana() > 7) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "diaSemana debe ser 1 (lunes) a 7 (domingo)"));
++        }
++        if (horario.getHoraInicio() == null || horario.getHoraFin() == null
++                || !horario.getHoraFin().isAfter(horario.getHoraInicio())) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "La horaFin debe ser mayor que la horaInicio"));
++        }
++
++        // Evita bloques traslapados el mismo dia para el mismo barbero
++        for (HorarioBarbero existente : ihorario.findByBarberoIdAndDiaSemana(barberoId, horario.getDiaSemana())) {
++            boolean traslapa = horario.getHoraInicio().isBefore(existente.getHoraFin())
++                    && horario.getHoraFin().isAfter(existente.getHoraInicio());
++            if (traslapa) {
++                return ResponseEntity.status(HttpStatus.CONFLICT)
++                        .body(Map.of("error", "Conflicto", "mensaje", "El horario se traslapa con un bloque existente ese dia"));
++            }
++        }
++
++        horario.setBarbero(barbero.get());
++        HorarioBarbero guardado = ihorario.save(horario);
++        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/ICita.java b/demo/src/main/java/com/example/demo/ICita.java
+new file mode 100644
+index 0000000..31b5da1
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/ICita.java
+@@ -0,0 +1,12 @@
++package com.example.demo;
++
++import org.springframework.data.repository.CrudRepository;
++
++import java.util.List;
++
++public interface ICita extends CrudRepository<Cita, Integer> {
++
++    List<Cita> findByClienteId(Integer clienteId);
++
++    List<Cita> findByBarberoId(Integer barberoId);
++}
+diff --git a/demo/src/main/java/com/example/demo/ICorte.java b/demo/src/main/java/com/example/demo/ICorte.java
+new file mode 100644
+index 0000000..6572ea6
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/ICorte.java
+@@ -0,0 +1,14 @@
++package com.example.demo;
++
++import org.springframework.data.repository.CrudRepository;
++
++import java.util.List;
++
++public interface ICorte extends CrudRepository<Corte, Integer> {
++
++    List<Corte> findByActivoTrue();
++
++    List<Corte> findByServicioId(Integer servicioId);
++
++    List<Corte> findByServicioIdAndActivoTrue(Integer servicioId);
++}
+diff --git a/demo/src/main/java/com/example/demo/ICotizacion.java b/demo/src/main/java/com/example/demo/ICotizacion.java
+new file mode 100644
+index 0000000..b522c62
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/ICotizacion.java
+@@ -0,0 +1,10 @@
++package com.example.demo;
++
++import org.springframework.data.repository.CrudRepository;
++
++import java.util.List;
++
++public interface ICotizacion extends CrudRepository<Cotizacion, Integer> {
++
++    List<Cotizacion> findByClienteId(Integer clienteId);
++}
+diff --git a/demo/src/main/java/com/example/demo/ICotizacionDetalle.java b/demo/src/main/java/com/example/demo/ICotizacionDetalle.java
+new file mode 100644
+index 0000000..5af2f38
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/ICotizacionDetalle.java
+@@ -0,0 +1,6 @@
++package com.example.demo;
++
++import org.springframework.data.repository.CrudRepository;
++
++public interface ICotizacionDetalle extends CrudRepository<CotizacionDetalle, Integer> {
++}
+diff --git a/demo/src/main/java/com/example/demo/IHorarioBarbero.java b/demo/src/main/java/com/example/demo/IHorarioBarbero.java
+index fe28bb5..bd49032 100644
+--- a/demo/src/main/java/com/example/demo/IHorarioBarbero.java
++++ b/demo/src/main/java/com/example/demo/IHorarioBarbero.java
+@@ -1,12 +1,12 @@
+-package com.example.demo;
+-
+-import org.springframework.data.repository.CrudRepository;
+-
+-import java.util.List;
+-
+-public interface IHorarioBarbero extends CrudRepository<HorarioBarbero, Integer> {
+-
+-    List<HorarioBarbero> findByBarberoId(Integer barberoId);
+-
+-    List<HorarioBarbero> findByBarberoIdAndDiaSemana(Integer barberoId, int diaSemana);
+-}
++package com.example.demo;
++
++import org.springframework.data.repository.CrudRepository;
++
++import java.util.List;
++
++public interface IHorarioBarbero extends CrudRepository<HorarioBarbero, Integer> {
++
++    List<HorarioBarbero> findByBarberoId(Integer barberoId);
++
++    List<HorarioBarbero> findByBarberoIdAndDiaSemana(Integer barberoId, int diaSemana);
++}
+diff --git a/demo/src/main/java/com/example/demo/IServicio.java b/demo/src/main/java/com/example/demo/IServicio.java
+new file mode 100644
+index 0000000..28850b6
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/IServicio.java
+@@ -0,0 +1,15 @@
++package com.example.demo;
++
++import org.springframework.data.repository.CrudRepository;
++
++import java.util.List;
++import java.util.Optional;
++
++public interface IServicio extends CrudRepository<Servicio, Integer> {
++
++    Optional<Servicio> findByNombre(String nombre);
++
++    boolean existsByNombre(String nombre);
++
++    List<Servicio> findByActivoTrue();
++}
+diff --git a/demo/src/main/java/com/example/demo/IUsuario.java b/demo/src/main/java/com/example/demo/IUsuario.java
+index 95ee3c7..fd64821 100644
+--- a/demo/src/main/java/com/example/demo/IUsuario.java
++++ b/demo/src/main/java/com/example/demo/IUsuario.java
+@@ -1,13 +1,12 @@
+-package com.example.demo;
+-
+-import org.springframework.data.repository.CrudRepository;
+-
+-import java.util.Optional;
+-
+-// Al estilo de ISaludador en clase: interfaz de repositorio con CrudRepository
+-public interface IUsuario extends CrudRepository<Usuario, Integer> {
+-
+-    Optional<Usuario> findByEmail(String email);
+-
+-    boolean existsByEmail(String email);
+-}
++package com.example.demo;
++
++import org.springframework.data.repository.CrudRepository;
++
++import java.util.Optional;
++
++public interface IUsuario extends CrudRepository<Usuario, Integer> {
++
++    Optional<Usuario> findByEmail(String email);
++
++    boolean existsByEmail(String email);
++}
+diff --git a/demo/src/main/java/com/example/demo/Rol.java b/demo/src/main/java/com/example/demo/Rol.java
+index deb44b5..198742b 100644
+--- a/demo/src/main/java/com/example/demo/Rol.java
++++ b/demo/src/main/java/com/example/demo/Rol.java
+@@ -1,8 +1,8 @@
+-package com.example.demo;
+-
+-// Roles del diagrama ER (usuarios.rol)
+-public enum Rol {
+-    CLIENTE,
+-    BARBERO,
+-    ADMIN
+-}
++package com.example.demo;
++
++// Roles del diagrama ER (usuarios.rol)
++public enum Rol {
++    CLIENTE,
++    BARBERO,
++    ADMIN
++}
+diff --git a/demo/src/main/java/com/example/demo/Servicio.java b/demo/src/main/java/com/example/demo/Servicio.java
+new file mode 100644
+index 0000000..180b18d
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/Servicio.java
+@@ -0,0 +1,87 @@
++package com.example.demo;
++
++import jakarta.persistence.Column;
++import jakarta.persistence.Entity;
++import jakarta.persistence.GeneratedValue;
++import jakarta.persistence.GenerationType;
++import jakarta.persistence.Id;
++import jakarta.persistence.Table;
++
++import java.math.BigDecimal;
++
++// Es el catálogo de lo que la barbería ofrece: cada servicio agrupa uno o varios cortes
++@Entity
++@Table(name = "servicios")
++public class Servicio {
++
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    private Integer id;
++
++    // Nombre único en la base: el controlador envía 409 cuando alguien intenta crear un servicio repetido.
++    @Column(unique = true)
++    private String nombre;
++
++    private String descripcion;
++
++    @Column(name = "duracion_min")
++    private Integer duracionMin;
++
++    private BigDecimal precio;
++
++    private boolean activo = true;
++
++    public Servicio() {
++    }
++
++    public Servicio(String nombre, String descripcion, Integer duracionMin, BigDecimal precio) {
++        this.nombre = nombre;
++        this.descripcion = descripcion;
++        this.duracionMin = duracionMin;
++        this.precio = precio;
++    }
++
++    public Integer getId() {
++        return id;
++    }
++
++    public String getNombre() {
++        return nombre;
++    }
++
++    public void setNombre(String nombre) {
++        this.nombre = nombre;
++    }
++
++    public String getDescripcion() {
++        return descripcion;
++    }
++
++    public void setDescripcion(String descripcion) {
++        this.descripcion = descripcion;
++    }
++
++    public Integer getDuracionMin() {
++        return duracionMin;
++    }
++
++    public void setDuracionMin(Integer duracionMin) {
++        this.duracionMin = duracionMin;
++    }
++
++    public BigDecimal getPrecio() {
++        return precio;
++    }
++
++    public void setPrecio(BigDecimal precio) {
++        this.precio = precio;
++    }
++
++    public boolean isActivo() {
++        return activo;
++    }
++
++    public void setActivo(boolean activo) {
++        this.activo = activo;
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/ServicioControlador.java b/demo/src/main/java/com/example/demo/ServicioControlador.java
+new file mode 100644
+index 0000000..c868a4e
+--- /dev/null
++++ b/demo/src/main/java/com/example/demo/ServicioControlador.java
+@@ -0,0 +1,85 @@
++package com.example.demo;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.web.bind.annotation.CrossOrigin;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.PathVariable;
++import org.springframework.web.bind.annotation.PostMapping;
++import org.springframework.web.bind.annotation.RequestBody;
++import org.springframework.web.bind.annotation.RequestHeader;
++import org.springframework.web.bind.annotation.RestController;
++
++import java.math.BigDecimal;
++import java.util.Map;
++import java.util.Optional;
++
++@CrossOrigin(origins = "*")
++@RestController
++public class ServicioControlador {
++
++    @Autowired
++    IServicio iservicio;
++
++    @Autowired
++    IUsuario iusuario;
++    //Verifica que el id del header sea de un usuario activo con rol ADMIN
++    private boolean esAdmin(Integer adminId) {
++        if (adminId == null) {
++            return false;
++        }
++        Optional<Usuario> admin = iusuario.findById(adminId);
++        return admin.isPresent() && admin.get().isActivo() && admin.get().getRol() == Rol.ADMIN;
++    }
++
++    // E2: POST /api/servicios -> 201 / 400 / 403 / 409
++    @PostMapping("/api/servicios")
++    public ResponseEntity<?> crear(@RequestBody Servicio servicio,
++                                   @RequestHeader(value = "X-Usuario-Id", required = false) Integer adminId) {
++        if (!esAdmin(adminId)) {
++            return ResponseEntity.status(HttpStatus.FORBIDDEN)
++                    .body(Map.of("error", "Sin permiso", "mensaje", "Solo un administrador puede crear servicios"));
++        }
++        if (servicio.getNombre() == null || servicio.getNombre().isBlank()
++                || servicio.getPrecio() == null
++                || servicio.getDuracionMin() == null) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "nombre, precio y duracionMin son obligatorios"));
++        }
++        if (servicio.getDuracionMin() <= 0) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "duracionMin debe ser mayor que 0"));
++        }
++        if (servicio.getPrecio().compareTo(BigDecimal.ZERO) < 0) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "precio no puede ser negativo"));
++        }
++        String nombre = servicio.getNombre().trim();
++        servicio.setNombre(nombre);
++        if (iservicio.existsByNombre(nombre)) {
++            return ResponseEntity.status(HttpStatus.CONFLICT)
++                    .body(Map.of("error", "Conflicto", "mensaje", "Ya existe un servicio con ese nombre"));
++        }
++        servicio.setActivo(true);
++        Servicio guardado = iservicio.save(servicio);
++        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
++    }
++
++    // E2: GET /api/servicios -> 200 (solo activos, es el catálogo del frontend)
++    @GetMapping("/api/servicios")
++    public ResponseEntity<?> listar() {
++        return ResponseEntity.ok(iservicio.findByActivoTrue());
++    }
++
++    // E2: GET /api/servicios/{id} -> 200 / 404
++    @GetMapping("/api/servicios/{id}")
++    public ResponseEntity<?> obtener(@PathVariable Integer id) {
++        Optional<Servicio> servicio = iservicio.findById(id);
++        if (servicio.isEmpty() || !servicio.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Servicio no encontrado"));
++        }
++        return ResponseEntity.ok(servicio.get());
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/Usuario.java b/demo/src/main/java/com/example/demo/Usuario.java
+index cc484f9..398950d 100644
+--- a/demo/src/main/java/com/example/demo/Usuario.java
++++ b/demo/src/main/java/com/example/demo/Usuario.java
+@@ -1,117 +1,117 @@
+-package com.example.demo;
+-
+-import com.fasterxml.jackson.annotation.JsonProperty;
+-import jakarta.persistence.Column;
+-import jakarta.persistence.Entity;
+-import jakarta.persistence.EnumType;
+-import jakarta.persistence.Enumerated;
+-import jakarta.persistence.GeneratedValue;
+-import jakarta.persistence.GenerationType;
+-import jakarta.persistence.Id;
+-import jakarta.persistence.PrePersist;
+-
+-import java.time.LocalDateTime;
+-
+-// Entidad del diagrama ER (tabla usuarios), al estilo de la entidad saludador de clase
+-@Entity
+-public class Usuario {
+-
+-    @Id
+-    @GeneratedValue(strategy = GenerationType.AUTO)
+-    private Integer id;
+-
+-    private String nombre;
+-
+-    @Column(unique = true)
+-    private String email;
+-
+-    // En la BD se guarda en password_hash y con BCrypt (RN-09).
+-    // WRITE_ONLY: si entra por POST pero no sale en los GET.
+-    @Column(name = "password_hash")
+-    private String password;
+-
+-    private String telefono;
+-
+-    @Enumerated(EnumType.STRING)
+-    private Rol rol;
+-
+-    private boolean activo = true;
+-
+-    @Column(name = "fecha_registro")
+-    private LocalDateTime fechaRegistro;
+-
+-    @PrePersist
+-    public void alCrear() {
+-        if (fechaRegistro == null) {
+-            fechaRegistro = LocalDateTime.now();
+-        }
+-    }
+-
+-    public Usuario() {
+-    }
+-
+-    public Usuario(String nombre, String email, String password, String telefono, Rol rol) {
+-        this.nombre = nombre;
+-        this.email = email;
+-        this.password = password;
+-        this.telefono = telefono;
+-        this.rol = rol;
+-    }
+-
+-    public Integer getId() {
+-        return id;
+-    }
+-
+-    public String getNombre() {
+-        return nombre;
+-    }
+-
+-    public void setNombre(String nombre) {
+-        this.nombre = nombre;
+-    }
+-
+-    public String getEmail() {
+-        return email;
+-    }
+-
+-    public void setEmail(String email) {
+-        this.email = email;
+-    }
+-
+-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+-    public String getPassword() {
+-        return password;
+-    }
+-
+-    public void setPassword(String password) {
+-        this.password = password;
+-    }
+-
+-    public String getTelefono() {
+-        return telefono;
+-    }
+-
+-    public void setTelefono(String telefono) {
+-        this.telefono = telefono;
+-    }
+-
+-    public Rol getRol() {
+-        return rol;
+-    }
+-
+-    public void setRol(Rol rol) {
+-        this.rol = rol;
+-    }
+-
+-    public boolean isActivo() {
+-        return activo;
+-    }
+-
+-    public void setActivo(boolean activo) {
+-        this.activo = activo;
+-    }
+-
+-    public LocalDateTime getFechaRegistro() {
+-        return fechaRegistro;
+-    }
+-}
++package com.example.demo;
++
++import com.fasterxml.jackson.annotation.JsonProperty;
++import jakarta.persistence.Column;
++import jakarta.persistence.Entity;
++import jakarta.persistence.EnumType;
++import jakarta.persistence.Enumerated;
++import jakarta.persistence.GeneratedValue;
++import jakarta.persistence.GenerationType;
++import jakarta.persistence.Id;
++import jakarta.persistence.PrePersist;
++
++import java.time.LocalDateTime;
++
++// Entidad del diagrama ER (tabla usuarios), al estilo de la entidad saludador de clase
++@Entity
++public class Usuario {
++
++    @Id
++    @GeneratedValue(strategy = GenerationType.AUTO)
++    private Integer id;
++
++    private String nombre;
++
++    @Column(unique = true)
++    private String email;
++
++    // En la BD se guarda en password_hash y con BCrypt (RN-09).
++    // WRITE_ONLY: si entra por POST pero no sale en los GET.
++    @Column(name = "password_hash")
++    private String password;
++
++    private String telefono;
++
++    @Enumerated(EnumType.STRING)
++    private Rol rol;
++
++    private boolean activo = true;
++
++    @Column(name = "fecha_registro")
++    private LocalDateTime fechaRegistro;
++
++    @PrePersist
++    public void alCrear() {
++        if (fechaRegistro == null) {
++            fechaRegistro = LocalDateTime.now();
++        }
++    }
++
++    public Usuario() {
++    }
++
++    public Usuario(String nombre, String email, String password, String telefono, Rol rol) {
++        this.nombre = nombre;
++        this.email = email;
++        this.password = password;
++        this.telefono = telefono;
++        this.rol = rol;
++    }
++
++    public Integer getId() {
++        return id;
++    }
++
++    public String getNombre() {
++        return nombre;
++    }
++
++    public void setNombre(String nombre) {
++        this.nombre = nombre;
++    }
++
++    public String getEmail() {
++        return email;
++    }
++
++    public void setEmail(String email) {
++        this.email = email;
++    }
++
++    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
++    public String getPassword() {
++        return password;
++    }
++
++    public void setPassword(String password) {
++        this.password = password;
++    }
++
++    public String getTelefono() {
++        return telefono;
++    }
++
++    public void setTelefono(String telefono) {
++        this.telefono = telefono;
++    }
++
++    public Rol getRol() {
++        return rol;
++    }
++
++    public void setRol(Rol rol) {
++        this.rol = rol;
++    }
++
++    public boolean isActivo() {
++        return activo;
++    }
++
++    public void setActivo(boolean activo) {
++        this.activo = activo;
++    }
++
++    public LocalDateTime getFechaRegistro() {
++        return fechaRegistro;
++    }
++}
+diff --git a/demo/src/main/java/com/example/demo/UsuarioControlador.java b/demo/src/main/java/com/example/demo/UsuarioControlador.java
+index 4e58d45..ade3439 100644
+--- a/demo/src/main/java/com/example/demo/UsuarioControlador.java
++++ b/demo/src/main/java/com/example/demo/UsuarioControlador.java
+@@ -1,100 +1,100 @@
+-package com.example.demo;
+-
+-import org.springframework.beans.factory.annotation.Autowired;
+-import org.springframework.http.HttpStatus;
+-import org.springframework.http.ResponseEntity;
+-import org.springframework.security.crypto.password.PasswordEncoder;
+-import org.springframework.web.bind.annotation.CrossOrigin;
+-import org.springframework.web.bind.annotation.GetMapping;
+-import org.springframework.web.bind.annotation.PathVariable;
+-import org.springframework.web.bind.annotation.PostMapping;
+-import org.springframework.web.bind.annotation.RequestBody;
+-import org.springframework.web.bind.annotation.RequestHeader;
+-import org.springframework.web.bind.annotation.RestController;
+-
+-import java.util.Map;
+-import java.util.Optional;
+-
+-// Al estilo de SaludarControlador en clase: @RestController, @CrossOrigin y @Autowired
+-@CrossOrigin(origins = "*")
+-@RestController
+-public class UsuarioControlador {
+-
+-    @Autowired
+-    IUsuario iusuario;
+-
+-    @Autowired
+-    PasswordEncoder encoder;
+-
+-    // E2: POST /api/usuarios -> 201 / 400 / 403 / 409
+-    // Si el rol es BARBERO o ADMIN, el header X-Usuario-Id debe ser de un ADMIN.
+-    @PostMapping("/api/usuarios")
+-    public ResponseEntity<?> registrar(@RequestBody Usuario usuario,
+-                                       @RequestHeader(value = "X-Usuario-Id", required = false) Integer adminId) {
+-        if (usuario.getNombre() == null || usuario.getNombre().isBlank()
+-                || usuario.getEmail() == null || usuario.getEmail().isBlank()
+-                || usuario.getPassword() == null || usuario.getPassword().isBlank()) {
+-            return ResponseEntity.badRequest()
+-                    .body(Map.of("error", "Datos invalidos", "mensaje", "nombre, email y password son obligatorios"));
+-        }
+-
+-        String email = usuario.getEmail().trim().toLowerCase();
+-        usuario.setEmail(email);
+-
+-        if (iusuario.existsByEmail(email)) {
+-            return ResponseEntity.status(HttpStatus.CONFLICT)
+-                    .body(Map.of("error", "Conflicto", "mensaje", "El email ya esta registrado"));
+-        }
+-
+-        if (usuario.getRol() == null) {
+-            usuario.setRol(Rol.CLIENTE);
+-        }
+-
+-        if (usuario.getRol() != Rol.CLIENTE) {
+-            if (adminId == null) {
+-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+-                        .body(Map.of("error", "Sin permiso", "mensaje", "Solo un administrador puede crear BARBERO o ADMIN"));
+-            }
+-            Optional<Usuario> admin = iusuario.findById(adminId);
+-            if (admin.isEmpty() || !admin.get().isActivo() || admin.get().getRol() != Rol.ADMIN) {
+-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+-                        .body(Map.of("error", "Sin permiso", "mensaje", "Solo un administrador puede crear BARBERO o ADMIN"));
+-            }
+-        }
+-
+-        usuario.setPassword(encoder.encode(usuario.getPassword()));
+-        usuario.setActivo(true);
+-        Usuario guardado = iusuario.save(usuario);
+-        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
+-    }
+-
+-    // E2: GET /api/usuarios/{id} -> 200 / 404
+-    @GetMapping("/api/usuarios/{id}")
+-    public ResponseEntity<?> obtener(@PathVariable Integer id) {
+-        Optional<Usuario> usuario = iusuario.findById(id);
+-        if (usuario.isEmpty() || !usuario.get().isActivo()) {
+-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+-                    .body(Map.of("error", "No encontrado", "mensaje", "Usuario no encontrado"));
+-        }
+-        return ResponseEntity.ok(usuario.get());
+-    }
+-
+-    // E2: POST /api/auth/login -> 200 / 401
+-    @PostMapping("/api/auth/login")
+-    public ResponseEntity<?> login(@RequestBody Usuario datos) {
+-        if (datos.getEmail() == null || datos.getPassword() == null) {
+-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+-                    .body(Map.of("error", "Credenciales incorrectas", "mensaje", "Credenciales incorrectas"));
+-        }
+-        Optional<Usuario> usuario = iusuario.findByEmail(datos.getEmail().trim().toLowerCase());
+-        if (usuario.isEmpty() || !usuario.get().isActivo()
+-                || !encoder.matches(datos.getPassword(), usuario.get().getPassword())) {
+-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+-                    .body(Map.of("error", "Credenciales incorrectas", "mensaje", "Credenciales incorrectas"));
+-        }
+-        return ResponseEntity.ok(Map.of(
+-                "id", usuario.get().getId(),
+-                "nombre", usuario.get().getNombre(),
+-                "rol", usuario.get().getRol()));
+-    }
+-}
++package com.example.demo;
++
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.http.HttpStatus;
++import org.springframework.http.ResponseEntity;
++import org.springframework.security.crypto.password.PasswordEncoder;
++import org.springframework.web.bind.annotation.CrossOrigin;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.PathVariable;
++import org.springframework.web.bind.annotation.PostMapping;
++import org.springframework.web.bind.annotation.RequestBody;
++import org.springframework.web.bind.annotation.RequestHeader;
++import org.springframework.web.bind.annotation.RestController;
++
++import java.util.Map;
++import java.util.Optional;
++
++// Al estilo de SaludarControlador en clase: @RestController, @CrossOrigin y @Autowired
++@CrossOrigin(origins = "*")
++@RestController
++public class UsuarioControlador {
++
++    @Autowired
++    IUsuario iusuario;
++
++    @Autowired
++    PasswordEncoder encoder;
++
++    // E2: POST /api/usuarios -> 201 / 400 / 403 / 409
++    // Si el rol es BARBERO o ADMIN, el header X-Usuario-Id debe ser de un ADMIN.
++    @PostMapping("/api/usuarios")
++    public ResponseEntity<?> registrar(@RequestBody Usuario usuario,
++                                       @RequestHeader(value = "X-Usuario-Id", required = false) Integer adminId) {
++        if (usuario.getNombre() == null || usuario.getNombre().isBlank()
++                || usuario.getEmail() == null || usuario.getEmail().isBlank()
++                || usuario.getPassword() == null || usuario.getPassword().isBlank()) {
++            return ResponseEntity.badRequest()
++                    .body(Map.of("error", "Datos invalidos", "mensaje", "nombre, email y password son obligatorios"));
++        }
++
++        String email = usuario.getEmail().trim().toLowerCase();
++        usuario.setEmail(email);
++
++        if (iusuario.existsByEmail(email)) {
++            return ResponseEntity.status(HttpStatus.CONFLICT)
++                    .body(Map.of("error", "Conflicto", "mensaje", "El email ya esta registrado"));
++        }
++
++        if (usuario.getRol() == null) {
++            usuario.setRol(Rol.CLIENTE);
++        }
++
++        if (usuario.getRol() != Rol.CLIENTE) {
++            if (adminId == null) {
++                return ResponseEntity.status(HttpStatus.FORBIDDEN)
++                        .body(Map.of("error", "Sin permiso", "mensaje", "Solo un administrador puede crear BARBERO o ADMIN"));
++            }
++            Optional<Usuario> admin = iusuario.findById(adminId);
++            if (admin.isEmpty() || !admin.get().isActivo() || admin.get().getRol() != Rol.ADMIN) {
++                return ResponseEntity.status(HttpStatus.FORBIDDEN)
++                        .body(Map.of("error", "Sin permiso", "mensaje", "Solo un administrador puede crear BARBERO o ADMIN"));
++            }
++        }
++
++        usuario.setPassword(encoder.encode(usuario.getPassword()));
++        usuario.setActivo(true);
++        Usuario guardado = iusuario.save(usuario);
++        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
++    }
++
++    // E2: GET /api/usuarios/{id} -> 200 / 404
++    @GetMapping("/api/usuarios/{id}")
++    public ResponseEntity<?> obtener(@PathVariable Integer id) {
++        Optional<Usuario> usuario = iusuario.findById(id);
++        if (usuario.isEmpty() || !usuario.get().isActivo()) {
++            return ResponseEntity.status(HttpStatus.NOT_FOUND)
++                    .body(Map.of("error", "No encontrado", "mensaje", "Usuario no encontrado"));
++        }
++        return ResponseEntity.ok(usuario.get());
++    }
++
++    // E2: POST /api/auth/login -> 200 / 401
++    @PostMapping("/api/auth/login")
++    public ResponseEntity<?> login(@RequestBody Usuario datos) {
++        if (datos.getEmail() == null || datos.getPassword() == null) {
++            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
++                    .body(Map.of("error", "Credenciales incorrectas", "mensaje", "Credenciales incorrectas"));
++        }
++        Optional<Usuario> usuario = iusuario.findByEmail(datos.getEmail().trim().toLowerCase());
++        if (usuario.isEmpty() || !usuario.get().isActivo()
++                || !encoder.matches(datos.getPassword(), usuario.get().getPassword())) {
++            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
++                    .body(Map.of("error", "Credenciales incorrectas", "mensaje", "Credenciales incorrectas"));
++        }
++        return ResponseEntity.ok(Map.of(
++                "id", usuario.get().getId(),
++                "nombre", usuario.get().getNombre(),
++                "rol", usuario.get().getRol()));
++    }
++}
+diff --git a/demo/src/main/resources/application.properties b/demo/src/main/resources/application.properties
+index f24d427..bede00a 100644
+--- a/demo/src/main/resources/application.properties
++++ b/demo/src/main/resources/application.properties
+@@ -1,6 +1,6 @@
+-spring.application.name=demo
+-server.port=8081
+-spring.datasource.url=jdbc:mysql://172.29.192.1:3306/barberia_db
+-spring.datasource.username=listi
+-spring.datasource.password=123
++spring.application.name=demo
++server.port=8081
++spring.datasource.url=jdbc:mysql://172.20.96.1:3306/barberia_db
++spring.datasource.username=listi
++spring.datasource.password=123
+ spring.jpa.hibernate.ddl-auto=update
+\ No newline at end of file
