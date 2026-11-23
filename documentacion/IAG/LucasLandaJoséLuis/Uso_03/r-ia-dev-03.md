@@ -12,19 +12,7 @@
 | Herramienta | Muse Spark, Meta |
 | Modelo / temperatura | Muse Spark / no aplica |
 | Descripcion de la intencion general | Generar el script de pruebas cURL del E4, en su propio archivo separado por avance, para probar activar/desactivar por `/estado`, `?activos=false` y la regla de contraseña mínima de 6 caracteres. |
-| Prompt original | "Dame las purbas curl para estos casos: Uso_03 (E4):
-
-El login entra con datos correctos y falla con contraseña incorrecta
-El registro crea el usuario
-El registro rechaza contraseñas de menos de 6 caracteres
-El registro rechaza correos ya registrados
-Crear un barbero sin ser admin se rechaza
-Cambiar la contraseña por una corta se rechaza
-Desactivar un usuario lo saca de la lista y ya no puede entrar
-La lista con inactivos sí muestra al desactivado
-Reactivar lo devuelve y ya se puede ver
-Crear horario, que no se traslape con otro y que la hora de fin sea mayor que la de inicio
-Listar y eliminar horarios." |
+| Prompt original | "Dame las purbas curl para estos casos: Uso_03 (E4): El login entra con datos correctos y falla con contraseña incorrecta, El registro crea el usuario, El registro rechaza contraseñas de menos de 6 caracteres, El registro rechaza correos ya registrados, Crear un barbero sin ser admin se rechaza, Cambiar la contraseña por una corta se rechaza, Desactivar un usuario lo saca de la lista y ya no puede entrar, La lista con inactivos sí muestra al desactivado, Reactivar lo devuelve y ya se puede ver, Crear horario, que no se traslape con otro y que la hora de fin sea mayor que la de inicio, Listar y eliminar horarios." |
 | Respuesta de IA | `pruebas-curl-e4.sh`: 20 casos con función `check` y `RESULTADO_FINAL fail=0/1`. Cubre login admin 200 y con contraseña mal 401, registro 201, registro con contraseña de 5 caracteres 400, email duplicado 409, crear BARBERO sin admin 403, PUT con contraseña de 5 caracteres 400, DELETE (baja lógica) 204, GET tras baja 404, login de inactivo 401, `?activos=false` con el inactivo y `"activo":false`, PUT de perfil sobre inactivo 404, `/estado` sin `activo` 400, `/estado` con id inexistente 404, reactivar por `/estado` 200, GET del reactivado 200, y horarios: crear 201, traslape 409, fin menor o igual que inicio 400, listar 200, DELETE 204. Los correos llevan marca de tiempo y el día del horario varía, así que se puede repetir. |
 | Codigo anterior | (No existía el archivo.) |
 | Codigo posterior | `pruebas-curl-e4.sh` (en `documentacion/IAG/LucasLandaJoseLuis/Uso_03/`, entregado el 2026-11-22; aún no subido a main). |
