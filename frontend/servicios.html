@@ -13,8 +13,12 @@
       <a href="index.html">Servicios</a>
       <a href="agendar.html">Agendar cita</a>
       <a href="resenas.html">Reseñas</a>
-      <a href="servicios.html" class="activo">Servicios (admin)</a>
+      <a href="servicios.html" class="activo">Gestión Servicios</a>
       <a href="cotizaciones.html">Cotizaciones</a>
+      <a href="login.html">Iniciar sesión</a>
+      <a href="registro.html">Registro</a>
+      <a href="usuarios.html">Usuarios</a>
+      <a href="horarios.html">Horarios</a>
     </nav>
     <span id="sesion-info" class="sesion"></span>
   </header>
@@ -77,7 +81,11 @@
       <form class="form-inline" onsubmit="return false;">
         <label>
           Servicio
-          <select id="corte-servicio-id"></select>
+          <select id="corte-servicio-id">
+            <option value="1">Corte clásico — 30 min · $150</option>
+            <option value="2">Corte + barba — 45 min · $200</option>
+            <option value="3">Afeitado clásico — 20 min · $120</option>
+          </select>
         </label>
         <button type="button" class="btn" id="btn-ver-cortes">Ver cortes</button>
       </form>

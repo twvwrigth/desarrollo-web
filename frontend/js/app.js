@@ -33,11 +33,23 @@ function leerUsuarioId() {
 }
 
 // Muestra en la barra superior quién está en sesión
+// Lee el nombre y el rol que guardarSesion() ya guardó al iniciar sesión
+// (mismo texto que pintarSesion en js/usuarios.js); si solo hay ID, cae
+// al formato anterior "usuario #id" para no dejar la barra vacía.
 function mostrarSesion() {
   const el = document.getElementById('sesion-info');
   if (!el) return;
   const id = sesionUsuarioId();
-  el.textContent = id ? ('Sesión: usuario #' + id) : '';
+  if (!id) { el.textContent = ''; return; }
+  let nombre = '';
+  let rol = '';
+  try {
+    nombre = sessionStorage.getItem('usuarioNombre') || '';
+    rol = sessionStorage.getItem('usuarioRol') || '';
+  } catch (e) { /* sin sessionStorage no hay nombre */ }
+  el.textContent = nombre
+    ? ('Sesión: ' + nombre + (rol ? ' (' + rol + ')' : ''))
+    : ('Sesión: usuario #' + id);
 }
 
 // Muestra el "mensaje" que manda el backend
