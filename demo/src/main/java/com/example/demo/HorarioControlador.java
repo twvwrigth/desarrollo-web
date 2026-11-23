@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -24,6 +25,29 @@ public class HorarioControlador {
 
     @Autowired
     IUsuario iusuario;
+
+    // E4-permisos: igual que en UsuarioControlador (mismo modelo de clase).
+    private Optional<Usuario> sesion(Integer sesionId) {
+        if (sesionId == null) return Optional.empty();
+        Optional<Usuario> u = iusuario.findById(sesionId);
+        if (u.isEmpty() || !u.get().isActivo()) return Optional.empty();
+        return u;
+    }
+
+    private boolean esAdmin(Integer sesionId) {
+        Optional<Usuario> u = sesion(sesionId);
+        return u.isPresent() && u.get().getRol() == Rol.ADMIN;
+    }
+
+    private ResponseEntity<?> sinSesion() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Sin sesion", "mensaje", "Inicia sesión para continuar"));
+    }
+
+    private ResponseEntity<?> sinPermiso(String mensaje) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Sin permiso", "mensaje", mensaje));
+    }
 
     // E2: GET /api/barberos/{id}/horarios -> 200 / 404
     @GetMapping("/api/barberos/{barberoId}/horarios")
@@ -40,9 +64,11 @@ public class HorarioControlador {
         return ResponseEntity.ok(ihorario.findByBarberoId(barberoId));
     }
 
-    // E2: POST /api/barberos/{id}/horarios -> 201 / 400 / 404 / 409
+    // E2: POST /api/barberos/{id}/horarios -> 201 / 400 / 401 / 403 / 404 / 409
+    // E4-permisos: crear horarios es el ADMIN o el barbero dueño (401 sin sesion, 403 otro).
     @PostMapping("/api/barberos/{barberoId}/horarios")
-    public ResponseEntity<?> agregar(@PathVariable Integer barberoId, @RequestBody HorarioBarbero horario) {
+    public ResponseEntity<?> agregar(@PathVariable Integer barberoId, @RequestBody HorarioBarbero horario,
+                                     @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
         Optional<Usuario> barbero = iusuario.findById(barberoId);
         if (barbero.isEmpty() || !barbero.get().isActivo()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -51,6 +77,10 @@ public class HorarioControlador {
         if (barbero.get().getRol() != Rol.BARBERO) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Datos invalidos", "mensaje", "El usuario no es un barbero"));
+        }
+        if (sesionId == null || sesion(sesionId).isEmpty()) return sinSesion();
+        if (!esAdmin(sesionId) && !sesionId.equals(barberoId)) {
+            return sinPermiso("Solo el barbero dueño o un administrador puede crear horarios");
         }
         if (horario.getDiaSemana() == null || horario.getDiaSemana() < 1 || horario.getDiaSemana() > 7) {
             return ResponseEntity.badRequest()
@@ -77,15 +107,22 @@ public class HorarioControlador {
         return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
-    // E3: PUT /api/horarios/{id} -> 200 / 400 / 404
+    // E3: PUT /api/horarios/{id} -> 200 / 400 / 401 / 403 / 404
+    // E4-permisos: editar un horario es el ADMIN o el barbero dueño.
     @PutMapping("/api/horarios/{id}")
-    public ResponseEntity<?> editar(@PathVariable Integer id, @RequestBody HorarioBarbero cambios) {
+    public ResponseEntity<?> editar(@PathVariable Integer id, @RequestBody HorarioBarbero cambios,
+                                    @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
         Optional<HorarioBarbero> actualOpt = ihorario.findById(id);
         if (actualOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "No encontrado", "mensaje", "Horario no encontrado"));
         }
         HorarioBarbero actual = actualOpt.get();
+        Integer duenoId = actual.getBarbero() != null ? actual.getBarbero().getId() : null;
+        if (sesionId == null || sesion(sesionId).isEmpty()) return sinSesion();
+        if (!esAdmin(sesionId) && (duenoId == null || !sesionId.equals(duenoId))) {
+            return sinPermiso("Solo el barbero dueño o un administrador puede editar horarios");
+        }
         int dia = cambios.getDiaSemana() != null ? cambios.getDiaSemana() : actual.getDiaSemana();
         java.time.LocalTime inicio = cambios.getHoraInicio() != null ? cambios.getHoraInicio() : actual.getHoraInicio();
         java.time.LocalTime fin = cambios.getHoraFin() != null ? cambios.getHoraFin() : actual.getHoraFin();
@@ -117,12 +154,20 @@ public class HorarioControlador {
         return ResponseEntity.ok(ihorario.save(actual));
     }
 
-    // E3: DELETE /api/horarios/{id} -> 204 / 404
+    // E3: DELETE /api/horarios/{id} -> 204 / 401 / 403 / 404
+    // E4-permisos: eliminar un horario es el ADMIN o el barbero dueño.
     @DeleteMapping("/api/horarios/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Integer id) {
-        if (ihorario.findById(id).isEmpty()) {
+    public ResponseEntity<?> eliminar(@PathVariable Integer id,
+                                      @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
+        Optional<HorarioBarbero> actualOpt = ihorario.findById(id);
+        if (actualOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "No encontrado", "mensaje", "Horario no encontrado"));
+        }
+        Integer duenoId = actualOpt.get().getBarbero() != null ? actualOpt.get().getBarbero().getId() : null;
+        if (sesionId == null || sesion(sesionId).isEmpty()) return sinSesion();
+        if (!esAdmin(sesionId) && (duenoId == null || !sesionId.equals(duenoId))) {
+            return sinPermiso("Solo el barbero dueño o un administrador puede eliminar horarios");
         }
         ihorario.deleteById(id);
         return ResponseEntity.noContent().build();

@@ -31,6 +31,32 @@ public class UsuarioControlador {
     @Autowired
     PasswordEncoder encoder;
 
+    // E4-permisos: quien llama, segun el header X-Usuario-Id (apiFetch lo manda
+    // cuando hay sesion). Sin header, o con un usuario inexistente o inactivo,
+    // no hay sesion valida. Sin Spring Security: el header se puede falsificar
+    // con cURL, pero frena el mal uso casual y es el mecanismo del reparto.
+    private Optional<Usuario> sesion(Integer sesionId) {
+        if (sesionId == null) return Optional.empty();
+        Optional<Usuario> u = iusuario.findById(sesionId);
+        if (u.isEmpty() || !u.get().isActivo()) return Optional.empty();
+        return u;
+    }
+
+    private boolean esAdmin(Integer sesionId) {
+        Optional<Usuario> u = sesion(sesionId);
+        return u.isPresent() && u.get().getRol() == Rol.ADMIN;
+    }
+
+    private ResponseEntity<?> sinSesion() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Sin sesion", "mensaje", "Inicia sesión para continuar"));
+    }
+
+    private ResponseEntity<?> sinPermiso(String mensaje) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Sin permiso", "mensaje", mensaje));
+    }
+
     // E2: POST /api/usuarios -> 201 / 400 / 403 / 409
     // Si el rol es BARBERO o ADMIN, el header X-Usuario-Id debe ser de un ADMIN.
     @PostMapping("/api/usuarios")
@@ -80,12 +106,18 @@ public class UsuarioControlador {
     }
 
     // E2: GET /api/usuarios/{id} -> 200 / 404
+    // E4-permisos: ver un perfil es el propio usuario o ADMIN (401 sin sesion, 403 otro).
     @GetMapping("/api/usuarios/{id}")
-    public ResponseEntity<?> obtener(@PathVariable Integer id) {
+    public ResponseEntity<?> obtener(@PathVariable Integer id,
+                                     @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
         Optional<Usuario> usuario = iusuario.findById(id);
         if (usuario.isEmpty() || !usuario.get().isActivo()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "No encontrado", "mensaje", "Usuario no encontrado"));
+        }
+        if (sesionId == null || sesion(sesionId).isEmpty()) return sinSesion();
+        if (!esAdmin(sesionId) && !sesionId.equals(id)) {
+            return sinPermiso("Solo puedes ver tu propio perfil");
         }
         return ResponseEntity.ok(usuario.get());
     }
@@ -95,7 +127,8 @@ public class UsuarioControlador {
     // Sin el parametro (o con activos=true) el comportamiento es el de E3: solo activos.
     @GetMapping("/api/usuarios")
     public ResponseEntity<?> listar(@RequestParam(value = "rol", required = false) String rol,
-                                    @RequestParam(value = "activos", required = false, defaultValue = "true") boolean soloActivos) {
+                                    @RequestParam(value = "activos", required = false, defaultValue = "true") boolean soloActivos,
+                                    @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
         Rol rolEnum = null;
         if (rol != null && !rol.isBlank()) {
             try {
@@ -104,6 +137,14 @@ public class UsuarioControlador {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Datos invalidos", "mensaje", "rol debe ser CLIENTE, BARBERO o ADMIN"));
             }
+        }
+        // E4-permisos: el listado general es solo para ADMIN. La excepcion es
+        // ?rol=BARBERO con activos=true, que usan horarios.html y agendar para
+        // listar barberos (sin inactivos); con activos=false ya pide ADMIN.
+        boolean listaBarberos = rolEnum == Rol.BARBERO && soloActivos;
+        if (!listaBarberos) {
+            if (sesionId == null || sesion(sesionId).isEmpty()) return sinSesion();
+            if (!esAdmin(sesionId)) return sinPermiso("Solo un administrador puede listar usuarios");
         }
         if (soloActivos) {
             if (rolEnum == null) {
@@ -124,12 +165,18 @@ public class UsuarioControlador {
     // E3: PUT /api/usuarios/{id} -> 200 / 400 / 404 / 409
     // Edita perfil (nombre, email, telefono, password). No cambia rol ni activo.
     // Para activar/desactivar se usa PUT /api/usuarios/{id}/estado (E4).
+    // E4-permisos: editar un perfil es el propio usuario o ADMIN.
     @PutMapping("/api/usuarios/{id}")
-    public ResponseEntity<?> editar(@PathVariable Integer id, @RequestBody Usuario cambios) {
+    public ResponseEntity<?> editar(@PathVariable Integer id, @RequestBody Usuario cambios,
+                                    @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
         Optional<Usuario> actualOpt = iusuario.findById(id);
         if (actualOpt.isEmpty() || !actualOpt.get().isActivo()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "No encontrado", "mensaje", "Usuario no encontrado"));
+        }
+        if (sesionId == null || sesion(sesionId).isEmpty()) return sinSesion();
+        if (!esAdmin(sesionId) && !sesionId.equals(id)) {
+            return sinPermiso("Solo puedes editar tu propio perfil");
         }
         Usuario actual = actualOpt.get();
 
@@ -177,8 +224,10 @@ public class UsuarioControlador {
     // porque si no, un usuario desactivado jamas se podria reactivar (el GET
     // y el PUT de perfil devuelven 404 para inactivos). Sin "activo" -> 400.
     // Igual que el DELETE de E3, no pide ser ADMIN (el reparto E4 no lo exige).
+    // E4-permisos: activar/desactivar es solo ADMIN.
     @PutMapping("/api/usuarios/{id}/estado")
-    public ResponseEntity<?> cambiarEstado(@PathVariable Integer id, @RequestBody Map<String, Object> cuerpo) {
+    public ResponseEntity<?> cambiarEstado(@PathVariable Integer id, @RequestBody Map<String, Object> cuerpo,
+                                          @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
         Optional<Usuario> actualOpt = iusuario.findById(id);
         if (actualOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -189,19 +238,25 @@ public class UsuarioControlador {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Datos invalidos", "mensaje", "activo debe ser true o false"));
         }
+        if (sesionId == null || sesion(sesionId).isEmpty()) return sinSesion();
+        if (!esAdmin(sesionId)) return sinPermiso("Solo un administrador puede activar o desactivar usuarios");
         Usuario actual = actualOpt.get();
         actual.setActivo((Boolean) activo);
         return ResponseEntity.ok(iusuario.save(actual));
     }
 
     // E3: DELETE /api/usuarios/{id} -> 204 / 404 (baja logica: activo=false)
+    // E4-permisos: dar de baja es solo ADMIN.
     @DeleteMapping("/api/usuarios/{id}")
-    public ResponseEntity<?> baja(@PathVariable Integer id) {
+    public ResponseEntity<?> baja(@PathVariable Integer id,
+                                  @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
         Optional<Usuario> usuario = iusuario.findById(id);
         if (usuario.isEmpty() || !usuario.get().isActivo()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "No encontrado", "mensaje", "Usuario no encontrado"));
         }
+        if (sesionId == null || sesion(sesionId).isEmpty()) return sinSesion();
+        if (!esAdmin(sesionId)) return sinPermiso("Solo un administrador puede dar de baja usuarios");
         usuario.get().setActivo(false);
         iusuario.save(usuario.get());
         return ResponseEntity.noContent().build();
