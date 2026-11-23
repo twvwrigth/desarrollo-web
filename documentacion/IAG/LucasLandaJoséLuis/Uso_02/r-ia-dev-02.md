@@ -12,8 +12,7 @@
 | Herramienta | Muse Spark, Meta |
 | Modelo / temperatura | Muse Spark / no aplica |
 | Descripcion de la intencion general | Generar el script de pruebas cURL del E3 para probar PUT y DELETE y el filtro por rol en usuarios y horarios, con el código esperado en cada caso. |
-| Prompt original | Genera las pruebas curl para lo siguiente: Reparto E3, parte de José Luis PUT/DELETE y filtro por rol en usuarios y
-horarios, y las pruebas cURL propias como parte de esa entrega. |
+| Prompt original | Genera las pruebas curl para lo siguiente: Reparto E3, parte de José Luis PUT/DELETE y filtro por rol en usuarios y horarios, y las pruebas cURL propias como parte de esa entrega.
 | Respuesta de IA | `pruebas-curl-e3.sh`: función `check` con el código esperado y `RESULTADO_FINAL fail=0/1`. Cubre filtro `?rol=BARBERO` (incluye barbero, excluye cliente), rol inválido 400, PUT usuario 200, PUT con email duplicado 409, PUT usuario 404, PUT horario parcial, traslape 409, PUT horario 404, DELETE horario 204 y repetido 404, DELETE usuario (baja lógica) 204, GET tras baja 404 y filtro CLIENTE sin la baja. El id del admin sale del login (ajuste del 2026-11-22 al armar el set por avance; antes se asumía 1). |
 | Codigo anterior | (No existía el archivo.) |
 | Codigo posterior | `pruebas-curl-e3.sh` (en `documentacion/IAG/LucasLandaJoseLuis/Uso_02/`, entregado el 2026-11-16; aún no subido a main). |
