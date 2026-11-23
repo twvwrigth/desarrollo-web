@@ -19,6 +19,42 @@ function leerSesion() {
 }
 
 
+// E4-permisos: lo que se ve segun el rol (la seguridad real esta en el backend).
+// Usuarios: solo ADMIN. Horarios: todos. Login/Registro: solo sin sesion.
+function aplicarPermisosNav() {
+  var s = leerSesion();
+  var esAdmin = !!(s && s.rol === 'ADMIN');
+  var links = {
+    'nav-login': !s,
+    'nav-registro': !s,
+    'nav-usuarios': esAdmin
+  };
+  Object.keys(links).forEach(function (id) {
+    var a = document.getElementById(id);
+    if (a) a.style.display = links[id] ? '' : 'none';
+  });
+}
+
+// Pagina solo para ADMIN (usuarios.html): sin sesion -> login, sin ser admin -> index.
+function exigirAdmin() {
+  var s = leerSesion();
+  if (!s) { window.location.href = 'login.html'; return false; }
+  if (s.rol !== 'ADMIN') { window.location.href = 'index.html'; return false; }
+  return true;
+}
+
+// Registro: sin ser ADMIN solo se puede crear CLIENTE (el backend ya da 403
+// si intentas crear BARBERO o ADMIN, pero la UI no lo ofrece).
+function ajustarRolesRegistro() {
+  var select = document.getElementById('registro-rol');
+  if (!select) return;
+  var s = leerSesion();
+  if (s && s.rol === 'ADMIN') return;
+  Array.prototype.slice.call(select.options).forEach(function (op) {
+    if (op.value !== 'CLIENTE') select.removeChild(op);
+  });
+}
+
 function pintarSesion() {
   var el = document.getElementById('sesion-info');
   if (!el) return;
@@ -50,6 +86,7 @@ function cerrarSesion() {
     sessionStorage.removeItem('usuarioRol');
   } catch (e) { /* nada */ }
   pintarSesion();
+  aplicarPermisosNav();
   mostrarMensaje('mensaje-login', 'Sesión cerrada.', false);
 }
 
@@ -67,6 +104,7 @@ async function iniciarSesion(event) {
     }
     guardarSesion(r.datos);
     pintarSesion();
+    aplicarPermisosNav();
     mostrarMensaje('mensaje-login', 'Sesión iniciada como ' + (r.datos.nombre || ('usuario #' + r.datos.id)) + ' (' + (r.datos.rol || '') + ').', false);
   } catch (e) {
     mostrarMensaje('mensaje-login', e.message, true);
@@ -208,3 +246,10 @@ async function reactivarUsuario(id) {
     mostrarMensaje('mensaje-usuarios', e.message, true);
   }
 }
+
+// El nav se ajusta al rol en cuanto carga cualquiera de mis paginas, y se
+// muestra el boton de cerrar sesion si hay sesion (tambien se conecta su clic).
+aplicarPermisosNav();
+mostrarBotonSesion();
+var btnCerrar = document.getElementById('btn-cerrar-sesion');
+if (btnCerrar) btnCerrar.addEventListener('click', cerrarSesion);

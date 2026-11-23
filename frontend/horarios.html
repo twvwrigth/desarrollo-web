@@ -15,12 +15,13 @@
       <a href="resenas.html">Reseñas</a>
       <a href="servicios.html">Gestión Servicios</a>
       <a href="cotizaciones.html">Cotizaciones</a>
-      <a href="login.html">Iniciar sesión</a>
-      <a href="registro.html">Registro</a>
-      <a href="usuarios.html">Usuarios</a>
-      <a href="horarios.html" class="activo">Horarios</a>
+      <a href="login.html" id="nav-login">Iniciar sesión</a>
+      <a href="registro.html" id="nav-registro">Registro</a>
+      <a href="usuarios.html" id="nav-usuarios">Usuarios</a>
+      <a href="horarios.html" id="nav-horarios" class="activo">Horarios</a>
     </nav>
     <span id="sesion-info" class="sesion"></span>
+    <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion" style="display: none;">Cerrar sesión</button>
   </header>
 
   <main>
@@ -50,7 +51,7 @@
       </div>
     </section>
 
-    <section class="card">
+    <section class="card" id="seccion-crear-horario">
       <h3>Crear horario</h3>
       <form id="form-horario" class="form">
         <label>
@@ -117,6 +118,8 @@
   <script src="js/usuarios.js"></script>
   <script src="js/horarios.js"></script>
   <script>
+    // E4-permisos: la pagina se muestra aun sin sesion (solo ver horarios);
+    // los permisos de crear/editar/eliminar los aplica horarios.js.
     pintarSesion();
     document.getElementById('form-elegir-barbero').addEventListener('submit', function (e) {
       e.preventDefault();

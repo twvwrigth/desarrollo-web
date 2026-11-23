@@ -15,12 +15,13 @@
       <a href="resenas.html">Reseñas</a>
       <a href="servicios.html">Gestión Servicios</a>
       <a href="cotizaciones.html">Cotizaciones</a>
-      <a href="login.html">Iniciar sesión</a>
-      <a href="registro.html">Registro</a>
-      <a href="usuarios.html" class="activo">Usuarios</a>
-      <a href="horarios.html">Horarios</a>
+      <a href="login.html" id="nav-login">Iniciar sesión</a>
+      <a href="registro.html" id="nav-registro">Registro</a>
+      <a href="usuarios.html" id="nav-usuarios" class="activo">Usuarios</a>
+      <a href="horarios.html" id="nav-horarios">Horarios</a>
     </nav>
     <span id="sesion-info" class="sesion"></span>
+    <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion" style="display: none;">Cerrar sesión</button>
   </header>
 
   <main>
@@ -91,16 +92,20 @@
   <script src="js/app.js"></script>
   <script src="js/usuarios.js"></script>
   <script>
-    pintarSesion();
-    document.getElementById('form-filtro-usuarios').addEventListener('submit', function (e) {
-      e.preventDefault();
+    // E4-permisos: esta pagina es solo para ADMIN (sin sesion -> login,
+    // con otro rol -> index). Si no pasa, no se carga nada.
+    if (exigirAdmin()) {
+      pintarSesion();
+      document.getElementById('form-filtro-usuarios').addEventListener('submit', function (e) {
+        e.preventDefault();
+        cargarUsuarios();
+      });
+      document.getElementById('form-editar-usuario').addEventListener('submit', guardarEdicionUsuario);
+      document.getElementById('btn-cancelar-editar-usuario').addEventListener('click', function () {
+        document.getElementById('seccion-editar-usuario').style.display = 'none';
+      });
       cargarUsuarios();
-    });
-    document.getElementById('form-editar-usuario').addEventListener('submit', guardarEdicionUsuario);
-    document.getElementById('btn-cancelar-editar-usuario').addEventListener('click', function () {
-      document.getElementById('seccion-editar-usuario').style.display = 'none';
-    });
-    cargarUsuarios();
+    }
   </script>
 </body>
 </html>

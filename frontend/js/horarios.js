@@ -2,9 +2,27 @@
 var DIA_SEMANA = ['', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 
+// E4-permisos: el BARBERO solo se ve a si mismo (selector fijo en el);
+ // el CLIENTE solo ve, sin crear ni editar (se oculta el formulario y los botones).
+function puedeEditarHorarios() {
+  var s = leerSesion();
+  return !!(s && (s.rol === 'ADMIN' || s.rol === 'BARBERO'));
+}
+
 async function cargarBarberosHorarios() {
   var select = document.getElementById('horario-barbero-id');
   if (!select) return;
+  var s = leerSesion();
+  // Sin sesion o siendo CLIENTE, solo se ve: se oculta el formulario de crear.
+  if (!puedeEditarHorarios()) {
+    var crear = document.getElementById('seccion-crear-horario');
+    if (crear) crear.style.display = 'none';
+  }
+  if (s && s.rol === 'BARBERO') {
+    select.innerHTML = '<option value="' + s.id + '">' + (s.nombre || ('Barbero #' + s.id)) + ' (#' + s.id + ')</option>';
+    select.disabled = true;
+    return;
+  }
   try {
     var r = await apiFetch('/usuarios?rol=BARBERO');
     if (!r.ok) throw new Error(mensajeBackend(r.datos, 'HTTP ' + r.status));
@@ -44,20 +62,32 @@ function pintarHorarios(horarios) {
     cuerpo.innerHTML = '<tr><td colspan="4">Este barbero aún no tiene horarios.</td></tr>';
     return;
   }
+  // El BARBERO solo edita sus propios horarios (el selector queda fijo en el);
+  // el ADMIN edita los de cualquiera.
+  var s = leerSesion();
+  var barberoElegido = document.getElementById('horario-barbero-id').value;
+  var editable = puedeEditarHorarios()
+    && (s.rol === 'ADMIN' || String(s.id) === barberoElegido);
   cuerpo.innerHTML = horarios.map(function (h) {
     var dia = DIA_SEMANA[h.diaSemana] || ('Día ' + h.diaSemana);
     var inicio = h.horaInicio ? String(h.horaInicio).slice(0, 5) : '';
     var fin = h.horaFin ? String(h.horaFin).slice(0, 5) : '';
-    return '<tr><td>' + dia + '</td><td>' + inicio + '</td><td>' + fin + '</td>' +
-      '<td><div class="acciones">' +
-      '<button type="button" class="btn btn-pequeno" onclick="pedirEditarHorario(' + h.id + ')">Editar</button> ' +
-      '<button type="button" class="btn btn-pequeno btn-peligro" onclick="eliminarHorario(' + h.id + ')">Eliminar</button>' +
-      '</div></td></tr>';
+    var acciones = editable
+      ? '<div class="acciones">' +
+        '<button type="button" class="btn btn-pequeno" onclick="pedirEditarHorario(' + h.id + ')">Editar</button> ' +
+        '<button type="button" class="btn btn-pequeno btn-peligro" onclick="eliminarHorario(' + h.id + ')">Eliminar</button>' +
+        '</div>'
+      : '';
+    return '<tr><td>' + dia + '</td><td>' + inicio + '</td><td>' + fin + '</td><td>' + acciones + '</td></tr>';
   }).join('');
 }
 
 async function crearHorario(event) {
   event.preventDefault();
+  if (!puedeEditarHorarios()) {
+    mostrarMensaje('mensaje-horario', 'Solo un administrador o el barbero dueño puede crear horarios.', true);
+    return;
+  }
   var barberoId = document.getElementById('horario-barbero-id').value;
   if (!barberoId) {
     mostrarMensaje('mensaje-horario', 'Elige un barbero primero.', true);
@@ -95,6 +125,10 @@ function pedirEditarHorario(id) {
 
 async function guardarEdicionHorario(event) {
   event.preventDefault();
+  if (!puedeEditarHorarios()) {
+    mostrarMensaje('mensaje-editar-horario', 'Solo un administrador o el barbero dueño puede editar horarios.', true);
+    return;
+  }
   var id = document.getElementById('editar-horario-id').value;
   var cuerpo = {
     diaSemana: Number(document.getElementById('editar-horario-dia').value),
@@ -116,6 +150,10 @@ async function guardarEdicionHorario(event) {
 }
 
 async function eliminarHorario(id) {
+  if (!puedeEditarHorarios()) {
+    mostrarMensaje('mensaje-lista-horarios', 'Solo un administrador o el barbero dueño puede eliminar horarios.', true);
+    return;
+  }
   if (!confirm('¿Eliminar el horario #' + id + '?')) return;
   try {
     var r = await apiFetch('/horarios/' + id, { method: 'DELETE' });

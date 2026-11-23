@@ -17,12 +17,13 @@
       <a href="resenas.html" class="activo">Reseñas</a>
       <a href="servicios.html">Gestión Servicios</a>
       <a href="cotizaciones.html">Cotizaciones</a>
-      <a href="login.html">Iniciar sesión</a>
-      <a href="registro.html">Registro</a>
-      <a href="usuarios.html">Usuarios</a>
-      <a href="horarios.html">Horarios</a>
+      <a href="login.html" id="nav-login">Iniciar sesión</a>
+      <a href="registro.html" id="nav-registro">Registro</a>
+      <a href="usuarios.html" id="nav-usuarios">Usuarios</a>
+      <a href="horarios.html" id="nav-horarios">Horarios</a>
     </nav>
     <span id="sesion-info" class="sesion"></span>
+    <button type="button" class="btn btn-secundario" id="btn-cerrar-sesion" style="display: none;">Cerrar sesión</button>
   </header>
 
   <main>
@@ -131,6 +132,7 @@
 
   <script src="js/common.js"></script>
   <script src="js/resenas.js"></script>
+  <script src="js/usuarios.js"></script>
 
   <script>
     mostrarSesion();
