@@ -1,5 +1,10 @@
 package com.example.demo;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +20,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-// Al estilo de SaludarControlador en clase: @RestController, @CrossOrigin y @Autowired
 @CrossOrigin(origins = "*")
 @RestController
 public class UsuarioControlador {
@@ -31,10 +30,6 @@ public class UsuarioControlador {
     @Autowired
     PasswordEncoder encoder;
 
-    // E4-permisos: quien llama, segun el header X-Usuario-Id (apiFetch lo manda
-    // cuando hay sesion). Sin header, o con un usuario inexistente o inactivo,
-    // no hay sesion valida. Sin Spring Security: el header se puede falsificar
-    // con cURL, pero frena el mal uso casual y es el mecanismo del reparto.
     private Optional<Usuario> sesion(Integer sesionId) {
         if (sesionId == null) return Optional.empty();
         Optional<Usuario> u = iusuario.findById(sesionId);
@@ -57,8 +52,6 @@ public class UsuarioControlador {
                 .body(Map.of("error", "Sin permiso", "mensaje", mensaje));
     }
 
-    // E2: POST /api/usuarios -> 201 / 400 / 403 / 409
-    // Si el rol es BARBERO o ADMIN, el header X-Usuario-Id debe ser de un ADMIN.
     @PostMapping("/api/usuarios")
     public ResponseEntity<?> registrar(@RequestBody Usuario usuario,
                                        @RequestHeader(value = "X-Usuario-Id", required = false) Integer adminId) {
@@ -69,7 +62,6 @@ public class UsuarioControlador {
                     .body(Map.of("error", "Datos invalidos", "mensaje", "nombre, email y password son obligatorios"));
         }
 
-        // E4: la contrasena debe tener al menos 6 caracteres.
         if (usuario.getPassword().length() < 6) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Datos invalidos", "mensaje", "password debe tener al menos 6 caracteres"));
@@ -105,8 +97,6 @@ public class UsuarioControlador {
         return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
-    // E2: GET /api/usuarios/{id} -> 200 / 404
-    // E4-permisos: ver un perfil es el propio usuario o ADMIN (401 sin sesion, 403 otro).
     @GetMapping("/api/usuarios/{id}")
     public ResponseEntity<?> obtener(@PathVariable Integer id,
                                      @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
@@ -122,9 +112,6 @@ public class UsuarioControlador {
         return ResponseEntity.ok(usuario.get());
     }
 
-    // E3: GET /api/usuarios?rol=BARBERO -> 200 (filtrable por rol; sin filtro lista activos)
-    // E4: ?activos=false incluye tambien a los dados de baja (activo=false).
-    // Sin el parametro (o con activos=true) el comportamiento es el de E3: solo activos.
     @GetMapping("/api/usuarios")
     public ResponseEntity<?> listar(@RequestParam(value = "rol", required = false) String rol,
                                     @RequestParam(value = "activos", required = false, defaultValue = "true") boolean soloActivos,
@@ -138,9 +125,6 @@ public class UsuarioControlador {
                         .body(Map.of("error", "Datos invalidos", "mensaje", "rol debe ser CLIENTE, BARBERO o ADMIN"));
             }
         }
-        // E4-permisos: el listado general es solo para ADMIN. La excepcion es
-        // ?rol=BARBERO con activos=true, que usan horarios.html y agendar para
-        // listar barberos (sin inactivos); con activos=false ya pide ADMIN.
         boolean listaBarberos = rolEnum == Rol.BARBERO && soloActivos;
         if (!listaBarberos) {
             if (sesionId == null || sesion(sesionId).isEmpty()) return sinSesion();
@@ -152,7 +136,7 @@ public class UsuarioControlador {
             }
             return ResponseEntity.ok(iusuario.findByRolAndActivoTrue(rolEnum));
         }
-        // E4: con activos=false se listan todos (activos e inactivos), con filtro por rol si se pidio.
+
         List<Usuario> todos = new ArrayList<>();
         iusuario.findAll().forEach(todos::add);
         if (rolEnum != null) {
@@ -162,10 +146,6 @@ public class UsuarioControlador {
         return ResponseEntity.ok(todos);
     }
 
-    // E3: PUT /api/usuarios/{id} -> 200 / 400 / 404 / 409
-    // Edita perfil (nombre, email, telefono, password). No cambia rol ni activo.
-    // Para activar/desactivar se usa PUT /api/usuarios/{id}/estado (E4).
-    // E4-permisos: editar un perfil es el propio usuario o ADMIN.
     @PutMapping("/api/usuarios/{id}")
     public ResponseEntity<?> editar(@PathVariable Integer id, @RequestBody Usuario cambios,
                                     @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
@@ -208,7 +188,7 @@ public class UsuarioControlador {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Datos invalidos", "mensaje", "password no puede ir vacio"));
             }
-            // E4: igual que en el registro, al menos 6 caracteres.
+
             if (cambios.getPassword().length() < 6) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Datos invalidos", "mensaje", "password debe tener al menos 6 caracteres"));
@@ -218,13 +198,6 @@ public class UsuarioControlador {
         return ResponseEntity.ok(iusuario.save(actual));
     }
 
-    // E4: PUT /api/usuarios/{id}/estado -> 200 / 400 / 404
-    // Activa o desactiva un usuario. Cuerpo: {"activo": true} o {"activo": false}.
-    // A diferencia del PUT de perfil, este SI acepta usuarios dados de baja,
-    // porque si no, un usuario desactivado jamas se podria reactivar (el GET
-    // y el PUT de perfil devuelven 404 para inactivos). Sin "activo" -> 400.
-    // Igual que el DELETE de E3, no pide ser ADMIN (el reparto E4 no lo exige).
-    // E4-permisos: activar/desactivar es solo ADMIN.
     @PutMapping("/api/usuarios/{id}/estado")
     public ResponseEntity<?> cambiarEstado(@PathVariable Integer id, @RequestBody Map<String, Object> cuerpo,
                                           @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
@@ -245,8 +218,6 @@ public class UsuarioControlador {
         return ResponseEntity.ok(iusuario.save(actual));
     }
 
-    // E3: DELETE /api/usuarios/{id} -> 204 / 404 (baja logica: activo=false)
-    // E4-permisos: dar de baja es solo ADMIN.
     @DeleteMapping("/api/usuarios/{id}")
     public ResponseEntity<?> baja(@PathVariable Integer id,
                                   @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
@@ -262,7 +233,6 @@ public class UsuarioControlador {
         return ResponseEntity.noContent().build();
     }
 
-    // E2: POST /api/auth/login -> 200 / 401
     @PostMapping("/api/auth/login")
     public ResponseEntity<?> login(@RequestBody Usuario datos) {
         if (datos.getEmail() == null || datos.getPassword() == null) {

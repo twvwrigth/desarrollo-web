@@ -43,7 +43,6 @@
     <section class="card">
       <h3>Sesión actual</h3>
       <p id="sesion-actual" class="nota">No hay sesión activa.</p>
-      <p class="nota">Al entrar, tu ID se guarda en la sesión y se manda como <strong>X-Usuario-Id</strong> en cada petición (así el backend sabe quién eres). La sesión se borra al cerrar la pestaña.</p>
       <p>¿No tienes cuenta? <a href="registro.html">Regístrate aquí</a>.</p>
     </section>
   </main>
@@ -56,9 +55,6 @@
   <script src="js/usuarios.js"></script>
   <script>
     pintarSesion();
-    // Al entrar bien, ir al inicio: antes te quedabas en login.html y
-    // tenías que navegar a mano. Solo redirige si la sesión es nueva
-    // (si el login falla, sesionUsuarioId() sigue vacío y no redirige).
     document.getElementById('form-login').addEventListener('submit', function (event) {
       var habiaSesion = sesionUsuarioId();
       iniciarSesion(event).then(function () {

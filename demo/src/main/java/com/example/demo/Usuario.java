@@ -1,6 +1,9 @@
 package com.example.demo;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -10,9 +13,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 
-import java.time.LocalDateTime;
-
-// Entidad del diagrama ER (tabla usuarios), al estilo de la entidad saludador de clase
 @Entity
 public class Usuario {
 

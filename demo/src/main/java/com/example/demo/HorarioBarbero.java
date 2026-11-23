@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import java.time.LocalTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,9 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
-import java.time.LocalTime;
-
-// Entidad del diagrama ER (tabla horarios_barbero). diaSemana: 1=lunes ... 7=domingo
 @Entity
 public class HorarioBarbero {
 
@@ -22,8 +21,6 @@ public class HorarioBarbero {
     @JoinColumn(name = "barbero_id")
     private Usuario barbero;
 
-    // Integer (no int) para poder distinguir "no viene en el PUT" de un valor,
-    // y permitir ediciones parciales en E3. La validacion 1-7 sigue en el controlador.
     @Column(name = "dia_semana")
     private Integer diaSemana;
 

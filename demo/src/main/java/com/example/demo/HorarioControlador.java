@@ -1,5 +1,8 @@
 package com.example.demo;
 
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-import java.util.Optional;
-
 @CrossOrigin(origins = "*")
 @RestController
 public class HorarioControlador {
@@ -26,7 +26,6 @@ public class HorarioControlador {
     @Autowired
     IUsuario iusuario;
 
-    // E4-permisos: igual que en UsuarioControlador (mismo modelo de clase).
     private Optional<Usuario> sesion(Integer sesionId) {
         if (sesionId == null) return Optional.empty();
         Optional<Usuario> u = iusuario.findById(sesionId);
@@ -49,7 +48,6 @@ public class HorarioControlador {
                 .body(Map.of("error", "Sin permiso", "mensaje", mensaje));
     }
 
-    // E2: GET /api/barberos/{id}/horarios -> 200 / 404
     @GetMapping("/api/barberos/{barberoId}/horarios")
     public ResponseEntity<?> listar(@PathVariable Integer barberoId) {
         Optional<Usuario> barbero = iusuario.findById(barberoId);
@@ -64,8 +62,6 @@ public class HorarioControlador {
         return ResponseEntity.ok(ihorario.findByBarberoId(barberoId));
     }
 
-    // E2: POST /api/barberos/{id}/horarios -> 201 / 400 / 401 / 403 / 404 / 409
-    // E4-permisos: crear horarios es el ADMIN o el barbero dueño (401 sin sesion, 403 otro).
     @PostMapping("/api/barberos/{barberoId}/horarios")
     public ResponseEntity<?> agregar(@PathVariable Integer barberoId, @RequestBody HorarioBarbero horario,
                                      @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
@@ -92,7 +88,6 @@ public class HorarioControlador {
                     .body(Map.of("error", "Datos invalidos", "mensaje", "La horaFin debe ser mayor que la horaInicio"));
         }
 
-        // Evita bloques traslapados el mismo dia para el mismo barbero
         for (HorarioBarbero existente : ihorario.findByBarberoIdAndDiaSemana(barberoId, horario.getDiaSemana())) {
             boolean traslapa = horario.getHoraInicio().isBefore(existente.getHoraFin())
                     && horario.getHoraFin().isAfter(existente.getHoraInicio());
@@ -107,8 +102,6 @@ public class HorarioControlador {
         return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
-    // E3: PUT /api/horarios/{id} -> 200 / 400 / 401 / 403 / 404
-    // E4-permisos: editar un horario es el ADMIN o el barbero dueño.
     @PutMapping("/api/horarios/{id}")
     public ResponseEntity<?> editar(@PathVariable Integer id, @RequestBody HorarioBarbero cambios,
                                     @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {
@@ -154,8 +147,6 @@ public class HorarioControlador {
         return ResponseEntity.ok(ihorario.save(actual));
     }
 
-    // E3: DELETE /api/horarios/{id} -> 204 / 401 / 403 / 404
-    // E4-permisos: eliminar un horario es el ADMIN o el barbero dueño.
     @DeleteMapping("/api/horarios/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Integer id,
                                       @RequestHeader(value = "X-Usuario-Id", required = false) Integer sesionId) {

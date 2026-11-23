@@ -75,7 +75,6 @@
           <input type="tel" id="editar-usuario-telefono">
         </label>
         <label>
-          Contraseña nueva (vacío = no se cambia)
           <input type="password" id="editar-usuario-password" minlength="6" placeholder="Vacío = no se cambia (mínimo 6 si la cambias)">
         </label>
         <button type="submit" class="btn">Guardar cambios</button>
@@ -92,8 +91,7 @@
   <script src="js/app.js"></script>
   <script src="js/usuarios.js"></script>
   <script>
-    // E4-permisos: esta pagina es solo para ADMIN (sin sesion -> login,
-    // con otro rol -> index). Si no pasa, no se carga nada.
+
     if (exigirAdmin()) {
       pintarSesion();
       document.getElementById('form-filtro-usuarios').addEventListener('submit', function (e) {
