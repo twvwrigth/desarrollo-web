@@ -13,18 +13,7 @@
 | Herramienta | Muse Spark, Meta |
 | Modelo / temperatura | Muse Spark / no aplica |
 | Descripcion de la intencion general | Generar el script de pruebas cURL de los permisos por rol, en su propio archivo separado por avance, para probar el 401 sin sesión y el 403 sin permiso en usuarios y horarios. |
-| Prompt original | "Dame las pruebas curl para estos casos:Uso_04 (permisos):
-
-Sin sesión no se puede listar usuarios
-Como cliente o barbero tampoco se puede; solo el admin
-La lista de barberos está abierta sin sesión
-Ver el perfil propio sí, el de otro no, sin sesión no
-Editar el perfil propio sí, el de otro no
-Desactivar como cliente no; como admin sí
-Reactivar como cliente no; como admin sí
-Horarios: verlos sin sesión sí; crearlos sin sesión no, como cliente no, de otro barbero no, como dueño sí
-Editar horarios como cliente no, de otro barbero no, como dueño sí
-Eliminar horarios como admin sí" |
+| Prompt original | "Dame las pruebas curl para estos casos:Uso_04 (permisos): Sin sesión no se puede listar usuarios, Como cliente o barbero tampoco se puede; solo el admin, La lista de barberos está abierta sin sesión, Ver el perfil propio sí, el de otro no, sin sesión no, Editar el perfil propio sí, el de otro no, Desactivar como cliente no; como admin sí, Reactivar como cliente no; como admin sí, Horarios: verlos sin sesión sí; crearlos sin sesión no, como cliente no, de otro barbero no, como dueño sí, Editar horarios como cliente no, de otro barbero no, como dueño sí, Eliminar horarios como admin sí" |
 | Respuesta de IA | `pruebas-curl-permisos.sh`: 24 casos con función `check` y `RESULTADO_FINAL fail=0/1`. Cubre listar usuarios sin sesión 401, como CLIENTE 403, como BARBERO 403 y como ADMIN 200; `?rol=BARBERO` sin sesión 200 (sigue abierto); ver perfil sin sesión 401, propio 200, ajeno 403 y como ADMIN 200; editar perfil propio 200 y ajeno 403; DELETE como CLIENTE 403 y como ADMIN 204; `/estado` como CLIENTE 403 y reactivar como ADMIN 200; horarios: listar sin sesión 200, crear sin sesión 401, como CLIENTE 403, de otro barbero 403 y como dueño 201, editar como CLIENTE 403, de otro barbero 403 y como dueño 200, eliminar como ADMIN 204. Los correos llevan marca de tiempo y el día del horario varía, así que se puede repetir. |
 | Codigo anterior | (No existía el archivo.) |
 | Codigo posterior | `pruebas-curl-permisos.sh` (en `documentacion/IAG/LucasLandaJoseLuis/Uso_04/`, entregado el 2026-11-22; aún no subido a main). |
