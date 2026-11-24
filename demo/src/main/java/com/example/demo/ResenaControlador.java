@@ -1,10 +1,12 @@
 package com.example.demo;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -105,15 +107,21 @@ public class ResenaControlador {
                     .body(Map.of("error", "No encontrado", "mensaje", "Barbero no encontrado"));
         }
 
-        List<Integer> citaIds = icita.findByBarberoId(barberoId).stream()
-                .map(Cita::getId)
-                .collect(Collectors.toList());
+        // FIX 23/11: las citas del barbero se buscan en memoria sobre todas
+        // las citas, para que el resumen use exactamente las mismas citas que
+        // el listado de resenas y no dependa de la consulta derivada.
+        Set<Integer> citaIds = new HashSet<>();
+        for (Cita cita : icita.findAll()) {
+            if (cita.getBarbero() != null && barberoId.equals(cita.getBarbero().getId())) {
+                citaIds.add(cita.getId());
+            }
+        }
 
         if (citaIds.isEmpty()) {
             return ResponseEntity.ok(Map.of("barberoId", barberoId, "promedio", 0.0, "total", 0));
         }
 
-        List<Resena> resenas = iresena.findByCitaIdIn(citaIds);
+        List<Resena> resenas = iresena.findByCitaIdIn(new ArrayList<>(citaIds));
         double promedio = resenas.stream()
                 .mapToInt(Resena::getCalificacion)
                 .average()

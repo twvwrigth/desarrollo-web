@@ -32,6 +32,14 @@ public class Cotizacion {
     @JoinColumn(name = "cliente_id")
     private Usuario cliente;
 
+    // Barbero que el cliente eligió para esta cotización (opcional: se
+    // puede elegir al crearla o asignarse después con PUT /barbero).
+    // La columna se crea sola al arrancar (ddl-auto=update); las
+    // cotizaciones viejas quedan con barbero en null.
+    @ManyToOne
+    @JoinColumn(name = "barbero_id")
+    private Usuario barbero;
+
     private LocalDateTime fecha;
 
     private BigDecimal total;
@@ -67,6 +75,14 @@ public class Cotizacion {
 
     public void setCliente(Usuario cliente) {
         this.cliente = cliente;
+    }
+
+    public Usuario getBarbero() {
+        return barbero;
+    }
+
+    public void setBarbero(Usuario barbero) {
+        this.barbero = barbero;
     }
 
     public LocalDateTime getFecha() {
