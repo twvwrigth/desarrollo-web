@@ -59,7 +59,9 @@
       var habiaSesion = sesionUsuarioId();
       iniciarSesion(event).then(function () {
         if (!habiaSesion && sesionUsuarioId()) {
-          setTimeout(function () { window.location.href = 'index.html'; }, 900);
+          var destino = null;
+          try { destino = sessionStorage.getItem('paginaDestino'); sessionStorage.removeItem('paginaDestino'); } catch (e) { /* nada */ }
+          setTimeout(function () { window.location.href = destino || 'index.html'; }, 900);
         }
       });
     });

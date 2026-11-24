@@ -23,6 +23,9 @@ function leerSesion() {
 // Usuarios: solo ADMIN. Horarios: todos. Login: solo sin sesion.
 // Registro: sin sesion (registro publico) o ADMIN (el admin crea usuarios y
 // barberos desde el menu); un CLIENTE o BARBERO con sesion no lo ve.
+// Gestión Servicios (servicios.html): solo ADMIN. El enlace no tiene id en
+// ninguna pagina, por eso se busca por su href. Sin sesion se deja visible
+// (al pulsarlo, el guard de sesion lo manda al login).
 function aplicarPermisosNav() {
   var s = leerSesion();
   var esAdmin = !!(s && s.rol === 'ADMIN');
@@ -34,6 +37,52 @@ function aplicarPermisosNav() {
   Object.keys(links).forEach(function (id) {
     var a = document.getElementById(id);
     if (a) a.style.display = links[id] ? '' : 'none';
+  });
+  var verGestion = !s || esAdmin;
+  Array.prototype.forEach.call(document.querySelectorAll('nav a[href="servicios.html"]'), function (a) {
+    a.style.display = verGestion ? '' : 'none';
+  });
+}
+
+// Páginas que exigen sesión. El index es público (catálogo) y login/registro
+// son las que crean la sesión, así que no entran aquí.
+var PAGINAS_PROTEGIDAS = ['agendar.html', 'resenas.html', 'servicios.html', 'cotizaciones.html', 'usuarios.html', 'horarios.html'];
+
+function paginaActual() {
+  var p = window.location.pathname || '';
+  var partes = p.split('/');
+  return partes[partes.length - 1] || 'index.html';
+}
+
+function guardarDestino(pagina) {
+  try { sessionStorage.setItem('paginaDestino', pagina); } catch (e) { /* nada */ }
+}
+
+// Sin sesión en una página protegida -> login (se guarda a dónde quería ir
+// para volver después de entrar). Con sesión no hace nada.
+function exigirSesion() {
+  if (PAGINAS_PROTEGIDAS.indexOf(paginaActual()) === -1) return true;
+  if (leerSesion()) return true;
+  guardarDestino(paginaActual());
+  window.location.href = 'login.html';
+  return false;
+}
+
+// Clic en un enlace del nav a una página protegida sin sesión -> login
+// directo, sin cargar la página para que rebote. Entrar por URL escrita o
+// por un enlace de dentro de la página lo cubre exigirSesion().
+function interceptarNavSinSesion() {
+  Array.prototype.forEach.call(document.querySelectorAll('nav a[href]'), function (a) {
+    var href = a.getAttribute('href') || '';
+    var pagina = href.split('/').pop().split('#')[0].split('?')[0];
+    if (PAGINAS_PROTEGIDAS.indexOf(pagina) === -1) return;
+    a.addEventListener('click', function (e) {
+      if (!leerSesion()) {
+        e.preventDefault();
+        guardarDestino(pagina);
+        window.location.href = 'login.html';
+      }
+    });
   });
 }
 
@@ -90,6 +139,7 @@ function cerrarSesion() {
   pintarSesion();
   aplicarPermisosNav();
   mostrarMensaje('mensaje-login', 'Sesión cerrada.', false);
+  exigirSesion();
 }
 
 async function iniciarSesion(event) {
@@ -251,7 +301,11 @@ async function reactivarUsuario(id) {
 
 // El nav se ajusta al rol en cuanto carga cualquiera de mis paginas, y se
 // muestra el boton de cerrar sesion si hay sesion (tambien se conecta su clic).
+// El guard de sesión corre en todas las paginas: sin sesión, las protegidas
+// redirigen al login (los enlaces del nav ya lo hacen al pulsar).
 aplicarPermisosNav();
+interceptarNavSinSesion();
+exigirSesion();
 mostrarBotonSesion();
 var btnCerrar = document.getElementById('btn-cerrar-sesion');
 if (btnCerrar) btnCerrar.addEventListener('click', cerrarSesion);
