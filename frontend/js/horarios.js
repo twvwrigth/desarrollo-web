@@ -21,6 +21,9 @@ async function cargarBarberosHorarios() {
   if (s && s.rol === 'BARBERO') {
     select.innerHTML = '<option value="' + s.id + '">' + (s.nombre || ('Barbero #' + s.id)) + ' (#' + s.id + ')</option>';
     select.disabled = true;
+    // El selector ya quedo fijo en el: se cargan sus horarios al entrar,
+    // sin esperar a que pulse "Ver horarios".
+    cargarHorarios();
     return;
   }
   try {
@@ -33,6 +36,9 @@ async function cargarBarberosHorarios() {
     select.innerHTML = r.datos.map(function (b) {
       return '<option value="' + b.id + '">' + (b.nombre || ('Barbero #' + b.id)) + ' (#' + b.id + ')</option>';
     }).join('');
+    // Se cargan los horarios del primer barbero al entrar, sin esperar
+    // a que se pulse "Ver horarios".
+    cargarHorarios();
   } catch (e) {
     mostrarMensaje('mensaje-lista-horarios', 'No se pudieron cargar los barberos: ' + e.message, true);
   }
@@ -98,6 +104,12 @@ async function crearHorario(event) {
     horaInicio: document.getElementById('horario-inicio').value,
     horaFin: document.getElementById('horario-fin').value
   };
+  // El formulario lleva novalidate: sin este aviso, el navegador bloquea
+  // el envio con las horas vacias sin mostrar nada (ese era el "no hace nada").
+  if (!cuerpo.horaInicio || !cuerpo.horaFin) {
+    mostrarMensaje('mensaje-horario', 'Pon la hora de inicio y la hora de fin.', true);
+    return;
+  }
   try {
     var r = await apiFetch('/barberos/' + barberoId + '/horarios', { method: 'POST', body: JSON.stringify(cuerpo) });
     if (!r.ok) {
@@ -135,6 +147,12 @@ async function guardarEdicionHorario(event) {
     horaInicio: document.getElementById('editar-horario-inicio').value,
     horaFin: document.getElementById('editar-horario-fin').value
   };
+  // Igual que al crear: sin este aviso el navegador bloquea el envio
+  // con las horas vacias sin mostrar nada.
+  if (!cuerpo.horaInicio || !cuerpo.horaFin) {
+    mostrarMensaje('mensaje-editar-horario', 'Pon la hora de inicio y la hora de fin.', true);
+    return;
+  }
   try {
     var r = await apiFetch('/horarios/' + id, { method: 'PUT', body: JSON.stringify(cuerpo) });
     if (!r.ok) {

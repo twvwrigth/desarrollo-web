@@ -145,6 +145,19 @@ async function agendarCita(event) {
     fechaHoraFin: fin ? fin + ':00' : null,
     notas: document.getElementById('notas-cita').value || null,
   };
+  // El formulario lleva novalidate: sin estos avisos, el navegador bloquea
+  // el envio con un campo vacio sin mostrar nada (ese era el "no hace nada"
+  // al agendar sin elegir el corte: la cita ni se creaba).
+  const faltan = [];
+  if (!cuerpo.cliente.id) faltan.push('tu ID de cliente');
+  if (!cuerpo.barbero.id) faltan.push('el barbero');
+  if (!cuerpo.servicio.id) faltan.push('el servicio');
+  if (!cuerpo.corte.id) faltan.push('el corte');
+  if (!inicio || !fin) faltan.push('la fecha y hora');
+  if (faltan.length) {
+    mostrarMensaje('mensaje-cita', 'Falta elegir ' + faltan.join(', ') + '.', true);
+    return;
+  }
   try {
     const resp = await fetch(API_BASE + '/citas', {
       method: 'POST',
@@ -167,8 +180,16 @@ async function listarMisCitas() {
   const estado = document.getElementById('filtro-estado');
   const lista = document.getElementById('lista-citas');
   if (!lista || !clienteId || !clienteId.value) return;
+  // Si la sesión es de BARBERO, la lista es de las citas agendadas con él
+  // (el endpoint del barbero): antes se pedían como si fuera cliente y
+  // siempre salía vacía, porque el barbero no es cliente de nadie.
+  let rol = '';
+  try { rol = sessionStorage.getItem('usuarioRol') || ''; } catch (e) { /* sin sesión */ }
+  const ruta = rol === 'BARBERO'
+    ? '/barberos/' + clienteId.value + '/citas'
+    : '/clientes/' + clienteId.value + '/citas';
   try {
-    const resp = await fetch(API_BASE + '/clientes/' + clienteId.value + '/citas');
+    const resp = await fetch(API_BASE + ruta);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     let citas = await resp.json();
     if (estado && estado.value) citas = citas.filter(function (c) { return c.estado === estado.value; });

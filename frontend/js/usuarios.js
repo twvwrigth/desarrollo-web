@@ -20,13 +20,15 @@ function leerSesion() {
 
 
 // E4-permisos: lo que se ve segun el rol (la seguridad real esta en el backend).
-// Usuarios: solo ADMIN. Horarios: todos. Login/Registro: solo sin sesion.
+// Usuarios: solo ADMIN. Horarios: todos. Login: solo sin sesion.
+// Registro: sin sesion (registro publico) o ADMIN (el admin crea usuarios y
+// barberos desde el menu); un CLIENTE o BARBERO con sesion no lo ve.
 function aplicarPermisosNav() {
   var s = leerSesion();
   var esAdmin = !!(s && s.rol === 'ADMIN');
   var links = {
     'nav-login': !s,
-    'nav-registro': !s,
+    'nav-registro': !s || esAdmin,
     'nav-usuarios': esAdmin
   };
   Object.keys(links).forEach(function (id) {

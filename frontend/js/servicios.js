@@ -5,12 +5,56 @@ var SERVICIOS_CACHE = [];
 var CORTES_CACHE = [];
 var CORTE_SERVICIO_ID = null;
 
+function sesionServicios() {
+  try {
+    var id = sessionStorage.getItem('usuarioId');
+    if (!id) return null;
+    return { id: Number(id), rol: sessionStorage.getItem('usuarioRol') || '' };
+  } catch (e) { return null; }
+}
+
+function esAdminServicios() {
+  var s = sesionServicios();
+  return !!(s && s.rol === 'ADMIN');
+}
+
+// La sesion manda: si hay sesion, el ID que se usa es el de la sesion y el
+// campo "ID de administrador" ya no se puede cambiar. Sin sesion se sigue
+// usando lo que se escriba en el campo (flujo manual del equipo).
 function leerAdminId() {
+  var s = sesionServicios();
+  if (s) return s.id;
   var el = document.getElementById('admin-id');
   if (el && el.value) return Number(el.value);
-  var sesion = null;
-  try { sesion = sessionStorage.getItem('usuarioId'); } catch (e) { /* sin sesión */ }
-  return sesion ? Number(sesion) : null;
+  return null;
+}
+
+// Con sesion de un rol que no es ADMIN no se muestra nada de
+// crear/editar/eliminar. Sin sesion se deja todo visible (flujo manual).
+function aplicarPermisosServicios() {
+  var s = sesionServicios();
+  var adminId = document.getElementById('admin-id');
+  if (s && adminId) {
+    adminId.value = s.id;
+    adminId.readOnly = true;
+  }
+  if (s && s.rol !== 'ADMIN') {
+    ['form-servicio', 'form-corte'].forEach(function (id) {
+      var f = document.getElementById(id);
+      if (f && f.closest('section')) f.closest('section').style.display = 'none';
+    });
+  }
+}
+
+// Guarda de las acciones: con sesion de un rol que no es ADMIN no se
+// intenta nada (el backend ya daria 403, pero la UI no ofrece el intento).
+function exigirAdminServicios(mensajeId) {
+  var s = sesionServicios();
+  if (s && s.rol !== 'ADMIN') {
+    mostrarMensaje(mensajeId, 'Solo un administrador puede crear, editar o eliminar servicios y cortes.', true);
+    return false;
+  }
+  return true;
 }
 
 function adminHeaders(mensajeId) {
@@ -44,19 +88,26 @@ function pintarServiciosAdmin(servicios) {
     cuerpo.innerHTML = '<tr><td colspan="5">No hay servicios todavía.</td></tr>';
     return;
   }
+  // Sin sesion se muestran (flujo manual del equipo); con sesion de un rol
+  // que no es ADMIN se ocultan.
+  var mostrarAcciones = !sesionServicios() || esAdminServicios();
   cuerpo.innerHTML = servicios.map(function (s) {
     var dur = s.duracionMin != null ? s.duracionMin + ' min' : '';
     var precio = s.precio != null ? '$' + Number(s.precio).toFixed(2) : '';
+    var acciones = mostrarAcciones
+      ? '<div class="acciones">' +
+        '<button type="button" class="btn btn-pequeno" onclick="pedirEditarServicio(' + s.id + ')">Editar</button> ' +
+        '<button type="button" class="btn btn-pequeno btn-peligro" onclick="eliminarServicio(' + s.id + ')">Eliminar</button>' +
+        '</div>'
+      : '';
     return '<tr><td>' + (s.nombre || 'Servicio') + '</td><td>' + (s.descripcion || '') + '</td>' +
       '<td>' + dur + '</td><td>' + precio + '</td>' +
-      '<td><div class="acciones">' +
-      '<button type="button" class="btn btn-pequeno" onclick="pedirEditarServicio(' + s.id + ')">Editar</button> ' +
-      '<button type="button" class="btn btn-pequeno btn-peligro" onclick="eliminarServicio(' + s.id + ')">Eliminar</button>' +
-      '</div></td></tr>';
+      '<td>' + acciones + '</td></tr>';
   }).join('');
 }
 
 function pedirEditarServicio(id) {
+  if (!exigirAdminServicios('mensaje-servicios')) return;
   var s = SERVICIOS_CACHE.find(function (x) { return x.id === id; });
   if (!s) return;
   document.getElementById('servicio-id').value = s.id;
@@ -78,6 +129,7 @@ function cancelarEdicionServicio() {
 
 async function guardarServicio(event) {
   event.preventDefault();
+  if (!exigirAdminServicios('mensaje-servicio')) return;
   var headers = adminHeaders('mensaje-servicio');
   if (!headers) return;
   var id = document.getElementById('servicio-id').value;
@@ -105,6 +157,7 @@ async function guardarServicio(event) {
   }
 }
 async function eliminarServicio(id) {
+  if (!exigirAdminServicios('mensaje-servicios')) return;
   if (!confirm('¿Eliminar el servicio #' + id + '? Es una baja lógica: queda inactivo y ya no aparece en el catálogo.')) return;
   var headers = adminHeaders('mensaje-servicios');
   if (!headers) return;
@@ -169,16 +222,21 @@ function pintarCortesAdmin(cortes) {
     cuerpo.innerHTML = '<tr><td colspan="3">Este servicio aún no tiene cortes.</td></tr>';
     return;
   }
+  var mostrarAcciones = !sesionServicios() || esAdminServicios();
   cuerpo.innerHTML = cortes.map(function (c) {
+    var acciones = mostrarAcciones
+      ? '<div class="acciones">' +
+        '<button type="button" class="btn btn-pequeno" onclick="pedirEditarCorte(' + c.id + ')">Editar</button> ' +
+        '<button type="button" class="btn btn-pequeno btn-peligro" onclick="eliminarCorte(' + c.id + ')">Eliminar</button>' +
+        '</div>'
+      : '';
     return '<tr><td>' + (c.nombre || 'Corte') + '</td><td>' + (c.descripcion || '') + '</td>' +
-      '<td><div class="acciones">' +
-      '<button type="button" class="btn btn-pequeno" onclick="pedirEditarCorte(' + c.id + ')">Editar</button> ' +
-      '<button type="button" class="btn btn-pequeno btn-peligro" onclick="eliminarCorte(' + c.id + ')">Eliminar</button>' +
-      '</div></td></tr>';
+      '<td>' + acciones + '</td></tr>';
   }).join('');
 }
 
 function pedirEditarCorte(id) {
+  if (!exigirAdminServicios('mensaje-cortes')) return;
   var c = CORTES_CACHE.find(function (x) { return x.id === id; });
   if (!c) return;
   document.getElementById('corte-id').value = c.id;
@@ -200,6 +258,7 @@ function cancelarEdicionCorte() {
 
 async function guardarCorte(event) {
   event.preventDefault();
+  if (!exigirAdminServicios('mensaje-corte')) return;
   var headers = adminHeaders('mensaje-corte');
   if (!headers) return;
   var id = document.getElementById('corte-id').value;
@@ -232,6 +291,7 @@ async function guardarCorte(event) {
 }
 
 async function eliminarCorte(id) {
+  if (!exigirAdminServicios('mensaje-cortes')) return;
   if (!confirm('¿Eliminar el corte #' + id + '? Es una baja lógica: queda inactivo.')) return;
   var headers = adminHeaders('mensaje-cortes');
   if (!headers) return;
